@@ -1,13 +1,15 @@
+#!/usr/bin/env python3
 # Author: Baptiste Didier
 
 from utils import sound
 from utils.brick import TouchSensor, wait_ready_sensors, reset_brick
 
+SOUND1 = sound.Sound(duration=0.1, pitch="C6", volume=100)
+SOUND2 = sound.Sound(duration=0.1, pitch="D6", volume=100)
+SOUND3 = sound.Sound(duration=0.1, pitch="E6", volume=100)
+SOUND4 = sound.Sound(duration=0.1, pitch="F6", volume=100)
 
-SOUND1 = sound.Sound(duration=0.1, pitch="A4", volume=100)
-SOUND2 = sound.Sound(duration=0.1, pitch="B4", volume=100)
-SOUND3 = sound.Sound(duration=0.1, pitch="C4", volume=100)
-SOUND4 = sound.Sound(duration=0.1, pitch="D4", volume=100)
+DATA_FILE = "../touch_sensors.csv"
 
 print("Program start.\nWaiting for sensors to turn on...")
 
@@ -15,7 +17,6 @@ TOUCH_SENSORS = [TouchSensor(1), TouchSensor(2), TouchSensor(3), TouchSensor(4)]
 
 wait_ready_sensors(True)
 print("Done initializing.")
-
 
 def play_sound(sound):
     sound.play()
@@ -28,8 +29,10 @@ def get_states():
 
 def flute_mechanism():
     try:
+        output_file = open(DATA_FILE, "w")
         while True:
             states = get_states()
+            output_file.write(f"{states}\n")
             
             if states == "1111":  # Emergency stop
                 break
@@ -51,9 +54,11 @@ def flute_mechanism():
     
     finally:
         print("Done")
+        output_file.close()
         reset_brick()
         exit()
 
 
 if __name__ == "__main__":
     flute_mechanism()
+
