@@ -6,7 +6,7 @@ SOUND1 = sound.Sound(duration=0.1, pitch="C6", volume=100)
 SOUND2 = sound.Sound(duration=0.1, pitch="D6", volume=100)
 SOUND3 = sound.Sound(duration=0.1, pitch="E6", volume=100)
 SOUND4 = sound.Sound(duration=0.1, pitch="F6", volume=100)
-DATA_FILE = "../data/touch_sensors.csv"
+DATA_FILE = "data/touch_sensors.csv"
 
 print("Program start.\nWaiting for sensors to turn on...")
 
