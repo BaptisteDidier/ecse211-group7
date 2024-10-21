@@ -1,22 +1,21 @@
-#!/usr/bin/env python3
-# Author: Baptiste Didier
-
 from utils import sound
 from utils.brick import TouchSensor, wait_ready_sensors, reset_brick
 
+# Constants
 SOUND1 = sound.Sound(duration=0.1, pitch="C6", volume=100)
 SOUND2 = sound.Sound(duration=0.1, pitch="D6", volume=100)
 SOUND3 = sound.Sound(duration=0.1, pitch="E6", volume=100)
 SOUND4 = sound.Sound(duration=0.1, pitch="F6", volume=100)
-
 DATA_FILE = "../touch_sensors.csv"
 
 print("Program start.\nWaiting for sensors to turn on...")
 
+# Sensors
 TOUCH_SENSORS = [TouchSensor(1), TouchSensor(2), TouchSensor(3), TouchSensor(4)]
 
 wait_ready_sensors(True)
 print("Done initializing.")
+
 
 def play_sound(sound):
     sound.play()
