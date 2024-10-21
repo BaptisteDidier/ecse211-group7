@@ -75,22 +75,22 @@ def main():
                 run_in_background(drumming_mechanism)
                 drumming_start = True
                 
-            if states == "1111":
+            if states == "1111": # Emergency stop
                 break
             
-            if states == "1000":
+            if states == "1000": # Note 1
                 play_sound(SOUND1)
                 print("1")
                 
-            if states == "0100":
+            if states == "0100": # Note 2
                 play_sound(SOUND2)
                 print("2")
                 
-            if states == "0010":
+            if states == "0010": # Note 3
                 play_sound(SOUND3)
                 print("3")
                 
-            if states == "0001":
+            if states == "0001": # Note 4
                 play_sound(SOUND4)
                 print("4")
                 
