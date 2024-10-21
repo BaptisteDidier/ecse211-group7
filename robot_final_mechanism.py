@@ -8,10 +8,10 @@ from threading import Thread
 INIT_TIME = 1
 POWER_LIMIT = 200
 SPEED_LIMIT = 720
-SOUND1 = sound.Sound(duration=0.7, pitch="C7", volume=100)
-SOUND2 = sound.Sound(duration=0.7, pitch="D7", volume=100)
-SOUND3 = sound.Sound(duration=0.7, pitch="E7", volume=100)
-SOUND4 = sound.Sound(duration=0.7 ,pitch="F7", volume=100)
+SOUND1 = sound.Sound(duration=0.7, pitch="C6", volume=100)
+SOUND2 = sound.Sound(duration=0.7, pitch="D6", volume=100)
+SOUND3 = sound.Sound(duration=0.7, pitch="E6", volume=100)
+SOUND4 = sound.Sound(duration=0.7 ,pitch="F6", volume=100)
 
 print("Program start.\nWaiting for sensors to turn on...")
 
