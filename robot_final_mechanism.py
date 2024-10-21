@@ -4,7 +4,7 @@ import brickpi3
 import time
 from threading import Thread
 
-# Global variables
+# Constants
 INIT_TIME = 1
 POWER_LIMIT = 200
 SPEED_LIMIT = 720
