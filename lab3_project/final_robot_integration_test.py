@@ -12,7 +12,7 @@ SOUND1 = sound.Sound(duration=0.7, pitch="C7", volume=100)
 SOUND2 = sound.Sound(duration=0.7, pitch="D7", volume=100)
 SOUND3 = sound.Sound(duration=0.7, pitch="E7", volume=100)
 SOUND4 = sound.Sound(duration=0.7, pitch="F7", volume=100)
-DATA_FILE = "../integration_test.csv"
+DATA_FILE = "../data/integration_test.csv"
 
 print("Program start.\nWaiting for sensors to turn on...")
 
