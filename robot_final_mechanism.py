@@ -1,17 +1,17 @@
 from utils import sound
-from utils.brick import TouchSensor, wait_ready_sensors, reset_brick, EV3UltrasonicSensor
+from utils.brick import TouchSensor, wait_ready_sensors, reset_brick
 import brickpi3
 import time
 from threading import Thread
-from types import FunctionType
 
+# Global variables
 INIT_TIME = 1
 POWER_LIMIT = 200
 SPEED_LIMIT = 720
-SOUND1 = sound.Sound(duration=1,pitch="C7", volume=100)
-SOUND2 = sound.Sound(duration=1,pitch="D7", volume=100)
-SOUND3 = sound.Sound(duration=1,pitch="E7", volume=100)
-SOUND4 = sound.Sound(duration=1,pitch="F7", volume=100)
+SOUND1 = sound.Sound(duration=0.7, pitch="C7", volume=100)
+SOUND2 = sound.Sound(duration=0.7, pitch="D7", volume=100)
+SOUND3 = sound.Sound(duration=0.7, pitch="E7", volume=100)
+SOUND4 = sound.Sound(duration=0.7 ,pitch="F7", volume=100)
 
 print("Program start.\nWaiting for sensors to turn on...")
 
@@ -23,23 +23,33 @@ TOUCH_SENSORS = [TouchSensor(1), TouchSensor(2), TouchSensor(3), TouchSensor(4)]
 wait_ready_sensors(True)
 print("Done initializing")
 
-
-
+# Methods
 def play_sound(sound):
+    """
+    Plays a sound and waits for it to finish
+    """
     sound.play()
     sound.wait_done()
     
     
 def get_states():
+    """
+    Transforms the states of the touch sensors into a string
+    """
     return ''.join('1' if sensor.is_pressed() else '0' for sensor in TOUCH_SENSORS)
 
-#multithreading
-def run_in_background(action: FunctionType) -> None:
-    thread=Thread(target=action)
-    thread.daemon = True
-    thread.start()
+
+def run_in_background(action):
+    """
+    Runs the given function in the background of the main thread
+    """
+    Thread(target=action, daemon=True).start()
+
 
 def drumming_mechanism():
+    """
+    Initializes the motor and makes the drumming sound
+    """
     BP.set_motor_limits(MOTOR, POWER_LIMIT, 400)
     BP.set_motor_position(MOTOR,0)
     print("initialized motors")
@@ -51,18 +61,20 @@ def drumming_mechanism():
        time.sleep(0.3)
             
 
-def flute_mechanism():
+def main():
+    """
+    Handles the main loop for the system
+    """
     drumming_start = False
+    
     try:
         while True:
             states = get_states()
-            #run_in_background(drumming_mechanism())
+
             if states == "1100" and not drumming_start:
-                #print("drumming activated")
                 run_in_background(drumming_mechanism)
                 drumming_start = True
                 
-            
             if states == "1111":
                 break
             
@@ -89,11 +101,12 @@ def flute_mechanism():
         print("Done")
         reset_brick()
         exit()
-            
+
+
 if __name__ == "__main__":
     BP.offset_motor_encoder(MOTOR,BP.get_motor_encoder(MOTOR))
     BP.set_motor_limits(MOTOR,POWER_LIMIT,SPEED_LIMIT)
     BP.set_motor_power(MOTOR,0)
-    flute_mechanism()
+    main()
     
     
