@@ -38,7 +38,7 @@ def get_states():
     """
     return ''.join('1' if sensor.is_pressed() else '0' for sensor in TOUCH_SENSORS)
 
-
+# daemon mode because we need it to end with the program
 def run_in_background(action):
     """
     Runs the given function in the background of the main thread
@@ -65,7 +65,7 @@ def main():
     """
     Handles the main loop for the system
     """
-    drumming_start = False
+    drumming_start = False # To only activate it once
     
     try:
         while True:
@@ -104,6 +104,7 @@ def main():
 
 
 if __name__ == "__main__":
+    # Initializes the motor
     BP.offset_motor_encoder(MOTOR,BP.get_motor_encoder(MOTOR))
     BP.set_motor_limits(MOTOR,POWER_LIMIT,SPEED_LIMIT)
     BP.set_motor_power(MOTOR,0)
