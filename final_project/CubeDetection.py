@@ -27,4 +27,4 @@ class CubeDetection:
         forward_distance = self.get_distance()
 
         if forward_distance < CubeDetection.cube_threshold:
-            self.cubes.append(self.get_robot_position())
+            self.cubes.append(self.get_position())
