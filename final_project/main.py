@@ -9,7 +9,7 @@ print("Done initializing")
 def main():
     
     try:
-        motion.initialize()
+        motion.calibrate()
         motion.move_forward(50, 2)
         motion.turn_right(50, 2)
         motion.turn_left(50, 2)
