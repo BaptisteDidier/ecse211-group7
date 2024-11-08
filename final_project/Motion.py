@@ -23,13 +23,13 @@ class Motion:
 
 
 # Public methods
-    def calibrate(self):
+    def calibrate(self, speed=50, duration=1):
         """
         Calibrate the motors to adjust for any speed discrepancies
         """
-        self.BP.set_motor_power(self.left_motor, 50)
-        self.BP.set_motor_power(self.right_motor, 50)
-        time.sleep(1)
+        self.BP.set_motor_power(self.left_motor, speed)
+        self.BP.set_motor_power(self.right_motor, speed)
+        time.sleep(duration)
         
         left = self.BP.get_motor_encoder(self.left_motor)
         right = self.BP.get_motor_encoder(self.right_motor)
