@@ -140,6 +140,7 @@ class Motion:
         """
         return self.x, self.y, self.theta
 
+    
 # Private methods
     def _reset_encoders(self):
         """
@@ -174,3 +175,4 @@ class Motion:
             self.BP.set_motor_power(self.right_motor, right_speed * self.right_factor)
         
         self.stop()
+
