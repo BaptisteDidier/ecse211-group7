@@ -1,5 +1,6 @@
 import brickpi3
 import time
+import time
 import math
 
 class Motion:
@@ -107,11 +108,31 @@ class Motion:
         """
         return (ticks / 360.0) * (self.wheel_circumference)
     
-    def update_odometry(self):
+    def odometry(self, sampling_rate=0.1):
         """
         Updates the position and angle of the robot
         """
-        print("Not implemented")
+        while True:
+            left_ticks = self.BP.get_motor_encoder(self.left_motor)
+            right_ticks = self.BP.get_motor_encoder(self.right_motor)
+            
+            delta_left = left_ticks - self.left_ticks
+            delta_right = right_ticks - self.right_ticks
+
+            delta_left_distance = self.encoder_to_distance(delta_left)
+            delta_right_distance = self.encoder_to_distance(delta_right)
+
+            delta_distance = (delta_left_distance + delta_right_distance) / 2.0
+            delta_theta = (delta_right_distance - delta_left_distance) / self.wheel_distance
+
+            self.x += delta_distance * math.cos(self.theta)
+            self.y += delta_distance * math.sin(self.theta)
+            self.theta += delta_theta
+
+            self.left_ticks = left_ticks
+            self.right_ticks = right_ticks 
+            
+            time.sleep(sampling_rate) 
         
     def get_position(self):
         """
