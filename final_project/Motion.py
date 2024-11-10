@@ -12,7 +12,7 @@ class Motion:
         self.left_motor = self.BP.PORT_A
         self.right_motor = self.BP.PORT_B
         self.left_factor = self.right_factor = 1, 1
-        self.reset_encoders()
+        self._reset_encoders()
         self.stop()
         
         # Odometry
@@ -20,12 +20,14 @@ class Motion:
         self.wheel_diameter = 5.6
         self.wheel_circumference = math.pi * self.wheel_diameter
         self.wheel_distance = 0  # the distance between the centers of both wheels
+        print("Wheel distance is set to 0")
         self.left_ticks = self.BP.get_motor_encoder(self.left_motor)
         self.right_ticks = self.BP.get_motor_encoder(self.right_motor)
 
         # Color detection
         # self.color_sensor = self.BP.PORT_1
         # self.BP.set_sensor_type(self.color_sensor, self.BP.SENSOR_TYPE.EV3_COLOR_COLOR)
+
 
 # Public methods
     def calibrate(self, speed=50, duration=1):
@@ -117,16 +119,17 @@ class Motion:
     
     def move_to(self, x, y, speed=50):
         """
-        Moves to a certain position
+        Moves to a certain position with given speed
         """
         current_x, current_y, current_theta = self.get_position()
-        delta_theta = current_theta - self.theta
-        
-        self.turn(speed, delta_theta, "right" if delta_theta >= 180 else "left")
+        delta_theta = math.degrees(math.atan2(y - current_y, x - current_x)) - current_theta
+        delta_theta = (delta_theta + 180) % 360 - 180
+        self.turn(speed, abs(delta_theta), "right" if delta_theta >= 0 else "left")
         self.move(speed, self._get_euclidean_distance(current_x, current_y, x, y), "forward")
 
+
 # Private methods
-    def reset_encoders(self):
+    def _reset_encoders(self):
         """
         Resets encoders to 0
         """
@@ -137,7 +140,7 @@ class Motion:
         """
         Moves both motors until a given number of encoder ticks is reached
         """
-        self.reset_encoders()
+        self._reset_encoders()
         
         while True:
             left_ticks = self.BP.get_motor_encoder(self.left_motor)
