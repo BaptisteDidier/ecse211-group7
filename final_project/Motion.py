@@ -1,6 +1,5 @@
 import brickpi3
 import time
-import time
 import math
 
 class Motion:
@@ -8,6 +7,7 @@ class Motion:
         """
         Initialize a Motion object with motors and factors
         """
+        # Motion
         self.BP = brickpi3.BrickPi3()
         self.left_motor = self.BP.PORT_A
         self.right_motor = self.BP.PORT_B
@@ -15,13 +15,17 @@ class Motion:
         self.reset_encoders()
         self.stop()
         
+        # Odometry
         self.x, self.y, self.theta = 0.0, 0.0, 0.0
         self.wheel_diameter = 5.6
         self.wheel_circumference = math.pi * self.wheel_diameter
-        self.wheel_distance = 0 # the distance between the centers of both wheels
-        self.left_ticks = self.BP.get_motor_encode(self.left_motor)
-        self.right_ticks = self.BP.get_motor_encode(self.right_motor)
+        self.wheel_distance = 0  # the distance between the centers of both wheels
+        self.left_ticks = self.BP.get_motor_encoder(self.left_motor)
+        self.right_ticks = self.BP.get_motor_encoder(self.right_motor)
 
+        # Color detection
+        # self.color_sensor = self.BP.PORT_1
+        # self.BP.set_sensor_type(self.color_sensor, self.BP.SENSOR_TYPE.EV3_COLOR_COLOR)
 
 # Public methods
     def calibrate(self, speed=50, duration=1):
@@ -36,64 +40,34 @@ class Motion:
         right = self.BP.get_motor_encoder(self.right_motor)
         factor = min(left, right) / max(left, right)
         self.left_factor, self.right_factor = (factor, 1) if left > right else (1, factor)
-
-    def move_forward(self, speed=50, duration=1):
-        """
-        Moves forward for a certain duration
-        """
-        self.move(speed, speed, duration)
-
-    def move_backward(self, speed=50, duration=1):
-        """
-        Moves backward for a certain duration
-        """
-        self.move(-speed, -speed, duration)
-
-    def turn_left(self, speed=50, duration=1):
-        """
-        Turns left for a certain duration
-        """
-        self.move(-speed, speed, duration)
-
-    def turn_right(self, speed=50, duration=1):
-        """
-        Turns right for a certain duration
-        """
-        self.move(speed, -speed, duration)
         
-    def go_forward(self, speed=50, distance=10):
+    def move(self, speed=50, distance=10, direction='forward'):
         """
-        Moves forward for a certain distance
+        Moves for a given speed, distance and direction
         """
+        if direction not in ['forward', 'backward']: 
+            raise ValueError("Direction must be 'forward' or 'backward'")
         target_ticks = distance / self.wheel_circumference * 360
-        self._move_for_distance(speed, speed, target_ticks)
-        
-    def go_forward(self, speed=50, distance=10):
+        self._move_for_distance(speed if direction == 'forward' else -speed, 
+                                speed if direction == 'forward' else -speed, 
+                                target_ticks)
+      
+    def turn(self, speed=50, angle=90, direction='right'):
         """
-        Moves backward for a certain distance
+        Turns to a given angle, at a given speed and direction
         """
-        target_ticks = distance / self.wheel_circumference * 360
-        self._move_for_distance(-speed, -speed, target_ticks)
-        
-    def turn_angle_right(self, speed=50, angle=90):
-        """
-        Turns right for a given angle
-        """
+        if direction not in ['right', 'left']: 
+            raise ValueError("Direction must be 'right' or 'left'")
         target_ticks = (angle / 360.0) * (math.pi * self.wheel_distance) / self.wheel_circumference * 360
-        self._move_for_distance(-speed, speed, target_ticks)
-        
-    def turn_angle_left(self, speed=50, angle=90):
-        """
-        Turns left for a given angle
-        """
-        target_ticks = (angle / 360.0) * (math.pi * self.wheel_distance) / self.wheel_circumference * 360
-        self._move_for_distance(speed, -speed, target_ticks)
-    
+        self._move_for_distance(-speed if direction == 'right' else speed, 
+                                 speed if direction == 'right' else -speed, 
+                                 target_ticks)
+
     def stop(self):
         """
         Stops any movement
         """
-        self.move(0, 0, 0)
+        self._move_for_distance(0, 0, 0)
 
     def reset(self):
         """
@@ -106,18 +80,21 @@ class Motion:
         """
         Convert encoder ticks to distance in cm
         """
-        return (ticks / 360.0) * (self.wheel_circumference)
-    
+        return (ticks / 360.0) * self.wheel_circumference
+                
     def odometry(self, sampling_rate=0.1):
         """
         Updates the position and angle of the robot
         """
+        left_ticks = self.BP.get_motor_encoder(self.left_motor)
+        right_ticks = self.BP.get_motor_encoder(self.right_motor)
+        
         while True:
-            left_ticks = self.BP.get_motor_encoder(self.left_motor)
-            right_ticks = self.BP.get_motor_encoder(self.right_motor)
-            
-            delta_left = left_ticks - self.left_ticks
-            delta_right = right_ticks - self.right_ticks
+            new_left_ticks = self.BP.get_motor_encoder(self.left_motor)
+            new_right_ticks = self.BP.get_motor_encoder(self.right_motor)
+
+            delta_left = new_left_ticks - left_ticks
+            delta_right = new_right_ticks - right_ticks
 
             delta_left_distance = self.encoder_to_distance(delta_left)
             delta_right_distance = self.encoder_to_distance(delta_right)
@@ -129,39 +106,38 @@ class Motion:
             self.y += delta_distance * math.sin(self.theta)
             self.theta += delta_theta
 
-            self.left_ticks = left_ticks
-            self.right_ticks = right_ticks 
-            
-            time.sleep(sampling_rate) 
+            left_ticks, right_ticks = new_left_ticks, new_right_ticks
+            time.sleep(sampling_rate)
         
     def get_position(self):
         """
         Returns the position and angle of the robot
         """
-        return self.x, self.y, self.theta
+        return self.x, self.y, self.theta  
+    
+    def move_to(self, x, y, speed=50):
+        """
+        Moves to a certain position
+        """
+        current_x, current_y, current_theta = self.get_position()
+        delta_theta = current_theta - self.theta
+        
+        self.turn(speed, delta_theta, "right" if delta_theta >= 180 else "left")
+        self.move(speed, self._get_euclidean_distance(current_x, current_y, x, y), "forward")
 
 # Private methods
-    def _reset_encoders(self):
+    def reset_encoders(self):
         """
         Resets encoders to 0
         """
         self.BP.reset_motor_encoder(self.left_motor)
         self.BP.reset_motor_encoder(self.right_motor)
         
-    def _move(self, left_speed, right_speed, duration):
-        """
-        Controls both motors for a certain duration
-        """
-        self.BP.set_motor_power(self.left_motor, left_speed * self.left_factor)
-        self.BP.set_motor_power(self.right_motor, right_speed * self.right_factor)
-        time.sleep(duration)
-        self.stop()
-        
     def _move_for_distance(self, left_speed, right_speed, target_ticks):
         """
         Moves both motors until a given number of encoder ticks is reached
         """
-        self._reset_encoders()
+        self.reset_encoders()
         
         while True:
             left_ticks = self.BP.get_motor_encoder(self.left_motor)
@@ -174,3 +150,9 @@ class Motion:
             self.BP.set_motor_power(self.right_motor, right_speed * self.right_factor)
         
         self.stop()
+        
+    def _get_euclidean_distance(self, current_x, current_y, target_x, target_y):
+        """
+        Returns the distance between two points
+        """
+        return ((target_x - current_x)**2 + (target_y - current_y)**2)**0.5

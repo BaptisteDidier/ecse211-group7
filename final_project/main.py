@@ -10,10 +10,9 @@ def main():
     
     try:
         motion.calibrate()
-        motion.move_forward(50, 2)
-        motion.turn_right(50, 2)
-        motion.turn_left(50, 2)
-        motion.move_forward(50, 2)
+        motion.move()
+        motion.turn()
+        motion.move()
         
     except KeyboardInterrupt:
         pass
