@@ -32,13 +32,11 @@ class Motion:
 
 
 # Public methods
-    def calibrate(self, speed=50, duration=1):
+    def calibrate(self, speed=50, distance=10):
         """
         Calibrate the motors to adjust for any speed discrepancies
         """
-        self.BP.set_motor_power(self.left_motor, speed)
-        self.BP.set_motor_power(self.right_motor, speed)
-        time.sleep(duration)
+        self.move(speed, distance, 'forward')
         
         left = self.BP.get_motor_encoder(self.left_motor)
         right = self.BP.get_motor_encoder(self.right_motor)
@@ -51,7 +49,7 @@ class Motion:
         """
         if direction not in ['forward', 'backward']: 
             raise ValueError("Direction must be 'forward' or 'backward'")
-        target_ticks = distance / self.wheel_circumference * 360
+        target_ticks = (distance * 360) / self.wheel_circumference
         self._move_for_distance(speed if direction == 'forward' else -speed, 
                                 speed if direction == 'forward' else -speed, 
                                 target_ticks)
@@ -62,7 +60,7 @@ class Motion:
         """
         if direction not in ['right', 'left']: 
             raise ValueError("Direction must be 'right' or 'left'")
-        target_ticks = (angle / 360.0) * (math.pi * self.wheel_distance) / self.wheel_circumference * 360
+        target_ticks = (angle * self.wheel_distance) / self.wheel_diameter
         self._move_for_distance(-speed if direction == 'right' else speed, 
                                  speed if direction == 'right' else -speed, 
                                  target_ticks)
@@ -71,7 +69,8 @@ class Motion:
         """
         Stops any movement
         """
-        self._move_for_distance(0, 0, 0)
+        self.BP.set_motor_power(self.left_motor, 0)
+        self.BP.set_motor_power(self.right_motor, 0)
 
     def reset(self):
         """
@@ -144,18 +143,19 @@ class Motion:
         """
         Moves both motors until a given number of encoder ticks is reached
         """
-        self._reset_encoders()
+        current_left = self.BP.get_motor_encoder(self.left_motor)
+        current_right = self.BP.get_motor_encoder(self.right_motor)
         
+        self.BP.set_motor_power(self.left_motor, left_speed * self.left_factor)
+        self.BP.set_motor_power(self.right_motor, right_speed * self.right_factor)
+            
         while True:
-            left_ticks = self.BP.get_motor_encoder(self.left_motor)
-            right_ticks = self.BP.get_motor_encoder(self.right_motor)
+            left_ticks = self.BP.get_motor_encoder(self.left_motor) - current_left
+            right_ticks = self.BP.get_motor_encoder(self.right_motor) - current_right
             
             if abs(left_ticks) >= target_ticks and abs(right_ticks) >= target_ticks:
                 break
 
-            self.BP.set_motor_power(self.left_motor, left_speed * self.left_factor)
-            self.BP.set_motor_power(self.right_motor, right_speed * self.right_factor)
-        
         self.stop()
         
     def _get_euclidean_distance(self, current_x, current_y, target_x, target_y):
