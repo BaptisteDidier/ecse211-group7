@@ -11,16 +11,18 @@ class Motion:
         self.BP = brickpi3.BrickPi3()
         self.left_motor = self.BP.PORT_A
         self.right_motor = self.BP.PORT_B
-        self.left_factor = self.right_factor = 1, 1
+        self.left_factor = 1
+        self.right_factor = 1
         self._reset_encoders()
         self.stop()
         
         # Odometry
-        self.x, self.y, self.theta = 0.0, 0.0, 0.0
+        self.x = 0.0
+        self.y = 0.0
+        self.theta = 0.0
         self.wheel_diameter = 5.6
         self.wheel_circumference = math.pi * self.wheel_diameter
-        self.wheel_distance = 0  # the distance between the centers of both wheels
-        print("Wheel distance is set to 0")
+        self.wheel_distance = 8.3
         self.left_ticks = self.BP.get_motor_encoder(self.left_motor)
         self.right_ticks = self.BP.get_motor_encoder(self.right_motor)
 
@@ -122,9 +124,11 @@ class Motion:
         Moves to a certain position with given speed
         """
         current_x, current_y, current_theta = self.get_position()
-        delta_theta = math.degrees(math.atan2(y - current_y, x - current_x)) - current_theta
-        delta_theta = (delta_theta + 180) % 360 - 180
-        self.turn(speed, abs(delta_theta), "right" if delta_theta >= 0 else "left")
+        target_theta = math.atan2(y - current_y, x - current_x)
+        delta_theta = target_theta - math.radians(current_theta)
+        delta_theta = (delta_theta + math.pi) % (2 * math.pi) - math.pi
+        turn = math.degrees(delta_theta)
+        self.turn(speed, abs(turn), "right" if turn >= 0 else "left")
         self.move(speed, self._get_euclidean_distance(current_x, current_y, x, y), "forward")
 
 
