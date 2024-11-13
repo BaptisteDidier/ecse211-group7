@@ -20,9 +20,9 @@ class Motion:
         self.x = 0.0
         self.y = 0.0
         self.theta = 0.0
-        self.wheel_diameter = 5.6
+        self.wheel_diameter = 4.2
         self.wheel_circumference = math.pi * self.wheel_diameter
-        self.wheel_distance = 8.3
+        self.wheel_distance = 7.83
         self.left_ticks = self.BP.get_motor_encoder(self.left_motor)
         self.right_ticks = self.BP.get_motor_encoder(self.right_motor)
 
