@@ -1,4 +1,4 @@
-import brickpi3
+from Ressources import left_motor, right_motor
 import time
 import math
 
@@ -8,13 +8,14 @@ class Motion:
         Initialize a Motion object with motors and factors
         """
         # Motion
-        self.BP = brickpi3.BrickPi3()
-        self.left_motor = self.BP.PORT_A
-        self.right_motor = self.BP.PORT_B
+        self.left_motor = left_motor
+        self.right_motor = right_motor
         self.left_factor = 1
         self.right_factor = 1
-        self._reset_encoders()
-        self.stop()
+        self.left_motor.set_limits(100, 1440)
+        self.right_motor.set_limits(100, 1440)
+        self.left_motor.reset_encoder()
+        self.right_motor.reset_encoder()
         
         # Odometry
         self.x = 0.0
@@ -23,12 +24,11 @@ class Motion:
         self.wheel_diameter = 4.2
         self.wheel_circumference = math.pi * self.wheel_diameter
         self.wheel_distance = 7.83
-        self.left_ticks = self.BP.get_motor_encoder(self.left_motor)
-        self.right_ticks = self.BP.get_motor_encoder(self.right_motor)
+        self.left_ticks = self.left_motor.get_encoder()
+        self.right_ticks = self.right_motor.get_encoder()
 
         # Color detection
-        # self.color_sensor = self.BP.PORT_1
-        # self.BP.set_sensor_type(self.color_sensor, self.BP.SENSOR_TYPE.EV3_COLOR_COLOR)
+        # self.color_sensor =
 
 
 # Public methods
@@ -38,8 +38,8 @@ class Motion:
         """
         self.move(speed, distance, 'forward')
         
-        left = self.BP.get_motor_encoder(self.left_motor)
-        right = self.BP.get_motor_encoder(self.right_motor)
+        left = self.left_motor.get_encoder()
+        right = self.right_motor.get_encoder()
         factor = min(left, right) / max(left, right)
         self.left_factor, self.right_factor = (factor, 1) if left > right else (1, factor)
         
@@ -64,20 +64,15 @@ class Motion:
         self._move_for_distance(-speed if direction == 'right' else speed, 
                                  speed if direction == 'right' else -speed, 
                                  target_ticks)
+        self.left_motor.set_position()
+        self.right_motor.set_position()
 
     def stop(self):
         """
         Stops any movement
         """
-        self.BP.set_motor_power(self.left_motor, 0)
-        self.BP.set_motor_power(self.right_motor, 0)
-
-    def reset(self):
-        """
-        Resets the BrickPi
-        """
-        self.stop()
-        self.BP.reset_all()
+        self.left_motor.set_power(0)
+        self.right_motor.set_power(0)
 
     def encoder_to_distance(self, ticks):
         """
@@ -89,12 +84,12 @@ class Motion:
         """
         Updates the position and angle of the robot
         """
-        left_ticks = self.BP.get_motor_encoder(self.left_motor)
-        right_ticks = self.BP.get_motor_encoder(self.right_motor)
+        left_ticks = self.left_motor.get_encoder()
+        right_ticks = self.right_motor.get_encoder()
         
         while True:
-            new_left_ticks = self.BP.get_motor_encoder(self.left_motor)
-            new_right_ticks = self.BP.get_motor_encoder(self.right_motor)
+            new_left_ticks = self.left_motor.get_encoder()
+            new_right_ticks = self.right_motor.get_encoder()
 
             delta_left = new_left_ticks - left_ticks
             delta_right = new_right_ticks - right_ticks
@@ -132,26 +127,20 @@ class Motion:
 
 
 # Private methods
-    def _reset_encoders(self):
-        """
-        Resets encoders to 0
-        """
-        self.BP.reset_motor_encoder(self.left_motor)
-        self.BP.reset_motor_encoder(self.right_motor)
         
     def _move_for_distance(self, left_speed, right_speed, target_ticks):
         """
         Moves both motors until a given number of encoder ticks is reached
         """
-        current_left = self.BP.get_motor_encoder(self.left_motor)
-        current_right = self.BP.get_motor_encoder(self.right_motor)
+        current_left = self.left_motor.get_encoder()
+        current_right = self.right_motor.get_encoder()
         
-        self.BP.set_motor_power(self.left_motor, left_speed * self.left_factor)
-        self.BP.set_motor_power(self.right_motor, right_speed * self.right_factor)
+        self.left_motor.set_power(left_speed * self.left_factor)
+        self.right_motor.set_power(right_speed * self.right_factor)
             
         while True:
-            left_ticks = self.BP.get_motor_encoder(self.left_motor) - current_left
-            right_ticks = self.BP.get_motor_encoder(self.right_motor) - current_right
+            left_ticks = self.left_motor.get_encoder() - current_left
+            right_ticks = self.right_motor.get_encoder() - current_right
             
             if abs(left_ticks) >= target_ticks and abs(right_ticks) >= target_ticks:
                 break

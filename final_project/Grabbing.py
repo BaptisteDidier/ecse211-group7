@@ -1,8 +1,8 @@
-from utils.brick import Motor
+from Ressources import gate_motor
 
 class Grabbing:
     def __init__(self):
-        self.motor = Motor("A")
+        self.motor = gate_motor
         self.motor_power = 100
         self.motor_dps = 720
         self.motor.set_limits(self.motor_power, self.motor_dps)
