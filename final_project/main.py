@@ -1,25 +1,28 @@
-from Motion import Motion
-from utils.brick import wait_ready_sensors
+from Ressources import *
+import Motion
+import ColorDetection
+import Grabbing
 
-motion = Motion()
-
-wait_ready_sensors(True)
-print("Done initializing")
+initialize_components()
 
 def main():
     
     try:
-        motion.calibrate()
-        motion.move()
-        motion.turn()
-        motion.move()
+        Motion.calibrate()
+        Motion.move(50, 20, 'forward')
+        
+        ColorDetection.get_normalized_rgb()
+        
+        Grabbing.open()
+        time.sleep(2)
+        Grabbing.close()
         
     except KeyboardInterrupt:
         pass
     
     finally:
         print("Stopping and resetting")
-        motion.reset()
+        reset_brick()
 
 if __name__ == "__main__":
     main()
