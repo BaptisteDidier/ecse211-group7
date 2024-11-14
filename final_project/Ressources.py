@@ -1,5 +1,7 @@
 from utils.brick import *
 
+# Initialize every IO device here
+
 # Motors
 left_motor = Motor("A")
 right_motor = Motor("B")
