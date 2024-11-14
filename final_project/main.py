@@ -30,6 +30,7 @@ def main():
     finally:
         print("Stopping and resetting")
         reset_brick()
+        exit()
 
 if __name__ == "__main__":
     main()
