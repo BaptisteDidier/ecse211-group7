@@ -9,17 +9,36 @@ class CostMap:
         self.costmap = [[0 for _ in range(self.width)] for _ in range(self.height)]
         
     def __str__(self):
-        """Display the cost map"""
+        """
+        Display the cost map
+        """
         return "\n".join(" ".join(f"{cell:3d}" for cell in row) for row in self.costmap)
 
     def add_obstacle(self, obstacle_position):
-        """Add a cube obstacle to the costmap."""
+        """
+        Add an obstacle to the costmap
+        """
         x, y = obstacle_position
-        
-        cell_x = x // self.cube_size
-        cell_y = y // self.cube_size
-
+        cell_x = int(x // self.cube_size)
+        cell_y = int(y // self.cube_size)
         if 0 <= cell_x < self.width and 0 <= cell_y < self.height:
-            self.costmap[cell_y][cell_x] = 100
-
-
+            self.costmap[cell_y][cell_x] = 1
+    
+    def add_water(self, water_position):
+        x, y = water_position
+        cell_x = int(x // self.cube_size)
+        cell_y = int(y // self.cube_size)
+        if 0 <= cell_x < self.width and 0 <= cell_y < self.height:
+            self.costmap[cell_y][cell_x] = float("inf")
+    
+    def get_cost(self, point):
+        """
+        Get the cost of a point in the costmap.
+        Converts real-world coordinates to grid coordinates and checks if the point is within bounds.
+        """
+        x, y = point
+        cell_x = int(x // self.cube_size)
+        cell_y = int(y // self.cube_size)
+        if 0 <= cell_x < self.width and 0 <= cell_y < self.height:
+            return self.costmap[cell_y][cell_x]
+        return float("inf")
