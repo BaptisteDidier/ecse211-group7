@@ -1,5 +1,4 @@
 from utils.brick import *
-from utils.brick import wait_ready_sensors
 
 # Initialize every IO device here
 
