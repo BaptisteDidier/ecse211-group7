@@ -20,12 +20,12 @@ def close():
     """
     gate_motor.set_position_relative(-90)
     
-def get_normalized_rgb():
+def get_normalized_rgb(number=5):
     """
     Returns the normalized values of the fixed color sensor
     """
     array = list()
-    for i in range(5):
+    for i in range(number):
         rgb = block_color_sensor.get_rgb()
         if any(value is None or value == 0 for value in rgb):
             print("Invalid reading")

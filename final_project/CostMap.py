@@ -1,6 +1,12 @@
+from Resources import ultrasonic_sensor
+import Motion
+
 class CostMap:
     
     def __init__(self):
+        """
+        Create a CostMap object to represent the map
+        """
         self.map_width = 122
         self.map_height = 122
         self.cube_size = 2.54
@@ -25,6 +31,9 @@ class CostMap:
             self.costmap[cell_y][cell_x] = 1
     
     def add_water(self, water_position):
+        """
+        Add a water portion to the map
+        """
         x, y = water_position
         cell_x = int(x // self.cube_size)
         cell_y = int(y // self.cube_size)
@@ -33,8 +42,7 @@ class CostMap:
     
     def get_cost(self, point):
         """
-        Get the cost of a point in the costmap.
-        Converts real-world coordinates to grid coordinates and checks if the point is within bounds.
+        Get the cost of a point in the costmap
         """
         x, y = point
         cell_x = int(x // self.cube_size)
@@ -42,3 +50,10 @@ class CostMap:
         if 0 <= cell_x < self.width and 0 <= cell_y < self.height:
             return self.costmap[cell_y][cell_x]
         return float("inf")
+
+    def scan(self):
+        """
+        Turns to assess where the obstacles are
+        """
+        Motion.turn(50, 180, "right")
+        
