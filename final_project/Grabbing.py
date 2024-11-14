@@ -1,4 +1,4 @@
-from Ressources import gate_motor
+from Resources import gate_motor
 
 # Global variables
 motor_power = 100

@@ -1,4 +1,4 @@
-from Ressources import block_color_sensor
+from Resources import block_color_sensor
 
 
 # Public methods

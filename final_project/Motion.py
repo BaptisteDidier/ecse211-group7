@@ -1,4 +1,4 @@
-from Ressources import left_motor, right_motor
+from Resources import left_motor, right_motor
 import time
 import math
 

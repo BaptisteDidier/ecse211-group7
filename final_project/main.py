@@ -1,4 +1,4 @@
-from Ressources import *
+from Resources import *
 import Motion
 import ColorDetection
 import Grabbing
