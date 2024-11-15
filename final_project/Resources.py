@@ -6,11 +6,13 @@ from utils.brick import *
 left_motor = Motor("A")
 right_motor = Motor("B")
 gate_motor = Motor("C")
+sweeping_motor = Motor("D")
 
 # Sensors
 ultrasonic_sensor = EV3UltrasonicSensor(1)
 block_color_sensor = EV3ColorSensor(2)
 scanning_color_sensor = EV3ColorSensor(3)
+gyro_sensor = EV3GyroSensor(4)
 
 def initialize_components():
     """ 

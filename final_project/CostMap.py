@@ -4,6 +4,7 @@ import math
 
 # Global variable
 obstacles = list()
+costmap = [[0 for _ in range(122)] for _ in range(122)]
 
 def get_obstacle_position():
     """
