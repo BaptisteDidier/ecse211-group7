@@ -1,14 +1,35 @@
 import matplotlib.pyplot as plt
 import random
 import networkx as nx
+import math
 
+nodelist =[]
 
+def compute_weight(node1, node2, length1, length2, angle):
+    if node1 == node2 and length2 == None:
+        return length1
+    elif node2 == node1 and length1 == None:
+        return length2
+    else:
+        new_edge_width = math.sqrt((length1)**2+(length2)**2 - 2 * length1 * length2 * math.cos(angle))
+        return new_edge_width
 
-def generate_complete_graph(num_nodes, weight_range=(1,100)): 
+def add_edge_weight_tuple(node1, node2, width, edge_weight_list): #adds a new tuple element in list that will be used in graph and returns it
+    global nodelist
+    if node1 not in nodelist:
+        nodelist.append(node1)
+    if node2 not in nodelist:
+        nodelist.append(node2)
+    new_tuple = (node1, node2, width)
+    edge_weight_list.append(new_tuple)
+    return new_tuple
+
+# we need to somehow add into a tuple list (node1, node2, weight) and also nodes_list=[numbers in here]
+def generate_complete_graph(nodes_list,edge_weight_list): 
     # makes a graph using the number of nodes and an arbitrary weight. For our project we need to get the edge weight values in between nodes
-    G = nx.complete_graph(num_nodes)
-    for u, v in G.edges:
-        G.edges[u,v]['weight'] = random.randint(*weight_range) # takes a random edge weight vakue for each edge in between each nodes
+    G = nx.graph()
+    G.add_nodes_from(nodes_list)
+    G.add_weighted_edges_from(edge_weight_list)
     return G
 
 def plot_graph_step(G, tour, currentnode, pos):
@@ -49,7 +70,6 @@ def nearest_neighbor_tsp(G, startNode=None):
     
     tour.append(startNode)
     plot_graph_step(G, tour, current_node, pos)
-
     print(tour)
     tour_cost = calculate_tour_cost(G, tour)
     print(f"Construction heuristic tour cost: {tour_cost}")
@@ -59,5 +79,5 @@ def nearest_neighbor_tsp(G, startNode=None):
     plt.show()
 
 if __name__ == "__main__":
-    G = generate_complete_graph(5)
+    #G = generate_complete_graph(5)
     nearest_neighbor_tsp(G,0)
