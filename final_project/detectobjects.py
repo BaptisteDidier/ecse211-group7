@@ -41,14 +41,32 @@ def collect_data_from_sweep(cur_value, node_list): # SET  node_number to 0 first
     output_file = open(US_SENSOR_DATA_FILE, "w")
     new_value = US_SENSOR.get_value()
     # we need to use the gyro sensor and not the ultrasonic sensor to get the angle of the sweep (from 0 to 90) 
-    angle = GYRO_SENSOR.get_abs_measure()
-    if new_value +0.5 < cur_value or new_value -0.5 > cur_value:
-        print("invalid: same cube")
-    elif new_value <= 30: #SET THIS BACK TO 120 AFTER
+   ## angle = GYRO_SENSOR.get_abs_measure()
+   ## if new_value +0.5 < cur_value or new_value -0.5 > cur_value:
+    ##    print("invalid: same cube")
+    ## elif new_value <= 30: #SET THIS BACK TO 120 AFTER
+    ##    output_file.write(f"{node_number}, {new_value}, {angle}\n")
+     ##   node_number += 1
+      ##  node_list.append(node_number)
+       ## cur_value = new_value
+# Updated - Marleine (I kept the orginal version as a comment ahead of this)
+if COLOR_SENSOR.color_name == "blue":
+        print(f"Water detected at node number {node_number}")
+        water_nodes.add(node_number)
+        for neighbor in graph.neighbors(node_number):
+            graph[node_number][neighbor]['weight'] = float('inf') 
+   
+    if US_SENSOR.get_value() < 30:  # Adjust threshold
+        print(f"Obstacle detected at node {node_number}")
+        obstacle_nodes.add(node_number)
+        for neighbor in graph.neighbors(node_number):
+            graph[node_number][neighbor]['weight'] = float('inf') 
+            
+    if new_value <= 120:  # Adjustinf the threshold based on distance
         output_file.write(f"{node_number}, {new_value}, {angle}\n")
-        node_number += 1
         node_list.append(node_number)
-        cur_value = new_value
+        print(f"New cube node detected: {node_number}")
+
 
 def add_edge_weight_tuple(node1, node2, width, edge_weight_list, nodelist): #adds a new tuple element in list that will be used in graph and returns it
     if node1 not in nodelist:
