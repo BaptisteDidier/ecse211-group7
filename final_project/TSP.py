@@ -7,7 +7,8 @@ def generate_complete_graph(nodes_list,edge_weight_list):
     # makes a graph using the number of nodes and an arbitrary weight. For our project we need to get the edge weight values in between nodes
     G = nx.graph()
     G.add_nodes_from(nodes_list)
-# How about this? 
+##Updated - Marleine
+    # How about this? 
     for node1, node2, weight in edge_weight_list:
         if node1 in water_nodes or node2 in water_nodes:
             weight = float('inf')  # Mark water nodes as inaccessible
