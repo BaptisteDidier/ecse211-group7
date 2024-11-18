@@ -1,8 +1,11 @@
 from utils import sound
-from utils.brick import TouchSensor, EV3UltrasonicSensor, wait_ready_sensors, reset_brick
+from utils.brick import TouchSensor, EV3UltrasonicSensor, EV3GyroSensor, wait_ready_sensors, reset_brick
 from time import sleep, time
 import math
 import itertools
+import Motion
+from threading import Thread
+import TSP
 
 
 US_SENSOR_DATA_FILE = "../data_analysis/get_nodes_value.csv"
@@ -29,19 +32,6 @@ def initial_movement():
     Motion.turn(50, 90, 'right')  
     time.sleep(0.5)
 
-def iniitial_sweep():
-    run_in_background(initial_movement)
-    output_file = open(US_SENSOR_DATA_FILE, "w")
-    new_value = US_SENSOR.get_value()
-    # we need to use the gyro sensor and not the ultrasonic sensor to get the angle of the sweep (from 0 to 90) 
-    angle = GYRO_SENSOR.get_angle()[0]
-    if new_value +0.5 < cur_value or new_value -0.5 > cur_value:
-        print("invalid: same cube")
-    elif new_value <= 30: #SET THIS BACK TO 120 AFTER
-        output_file.write(f"{node_number}, {new_value}, {angle}\n")
-        node_number += 1
-        node_list.append(node_number)
-        cur_value = new_value
 
 def generate_node_edges(node_numbers):
     edges = list(itertools.combinations(node_numbers, 2))
@@ -51,7 +41,7 @@ def collect_data_from_sweep(cur_value, node_list): # SET  node_number to 0 first
     output_file = open(US_SENSOR_DATA_FILE, "w")
     new_value = US_SENSOR.get_value()
     # we need to use the gyro sensor and not the ultrasonic sensor to get the angle of the sweep (from 0 to 90) 
-    angle = US_SENSOR.get_angle()
+    angle = GYRO_SENSOR.get_abs_measure()
     if new_value +0.5 < cur_value or new_value -0.5 > cur_value:
         print("invalid: same cube")
     elif new_value <= 30: #SET THIS BACK TO 120 AFTER
@@ -88,8 +78,8 @@ def convert_node_data_tuple(node_list, tuple_list):
                 length1, angle1 = output_file[1], output_file[2]
                 if node2 == output_file[0]:
                     length2, angle2 = output_file[1], output_file[2]
-                    new_length = (node1, node2, compute_weight(node1, node2,length1,length2, math.abs(angle1-angle2)))                 
-                    add_edge_weight_tuple(node2, node1,new_length,tuple_list, node_list)  
+                    new_length =compute_weight(node1, node2,length1,length2, math.abs(angle1-angle2))              
+                    add_edge_weight_tuple(node1, node2,new_length,tuple_list, node_list)  
     return tuple_list
 
 
@@ -101,12 +91,19 @@ if __name__ == "__main__":
     node_list = []
     tuple_list = tuple()
     first_value = US_SENSOR.get_value()
+    run_in_background(initial_movement)
     while (True):
         collect_data_from_sweep(first_value, node_list)
         if TOUCH_SENSOR.is_pressed():
             break
     final = convert_node_data_tuple(node_list,tuple_list)
-    print(final)
+    graph = TSP.generate_complete_graph(node_list,final)
+    tour_list_optimized = TSP.nearest_neighbor_tsp(graph,0) # now that we have the order of nodes, go to em
+
+
+
+
+    
 
 
 

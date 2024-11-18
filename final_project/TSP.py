@@ -51,6 +51,7 @@ def nearest_neighbor_tsp(G, startNode=None):
     print(tour)
     tour_cost = calculate_tour_cost(G, tour)
     print(f"Construction heuristic tour cost: {tour_cost}")
+    return tour
     
     
     plt.ioff()
