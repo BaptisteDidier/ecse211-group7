@@ -1,4 +1,4 @@
-from Resources import left_motor, right_motor
+from Resources import left_motor, right_motor, gyro_sensor
 import time
 import math
 
@@ -17,6 +17,11 @@ theta = 0.0
 wheel_diameter = 4.2
 wheel_circumference = math.pi * wheel_diameter
 wheel_distance = 7.83
+
+# PID
+Kp = 2.0
+Ki = 0.0
+Kd = 1.0
 
 
 # Public methods
@@ -41,7 +46,7 @@ def move(speed=50, distance=10, direction='forward'):
     target_ticks = (distance * 360) / wheel_circumference
     _move_for_distance(speed if direction == 'forward' else -speed, 
                        speed if direction == 'forward' else -speed, 
-                       target_ticks)
+                       target_ticks, "move")
 
 def turn(speed=50, angle=90, direction='right'):
     """
@@ -52,7 +57,7 @@ def turn(speed=50, angle=90, direction='right'):
     target_ticks = (angle * wheel_distance) / wheel_diameter
     _move_for_distance(-speed if direction == 'right' else speed, 
                        speed if direction == 'right' else -speed, 
-                       target_ticks)
+                       target_ticks, "turn")
 
 def stop():
     """
@@ -115,23 +120,39 @@ def move_to(target_x, target_y, speed=50):
 
 
 # Private methods
-def _move_for_distance(left_speed, right_speed, target_ticks):
+def _move_for_distance(left_speed, right_speed, target_ticks, type="move"):
     """
     Moves both motors until a given number of encoder ticks is reached
     """
-    global left_factor, right_factor
-    current_left = left_motor.get_encoder()
-    current_right = right_motor.get_encoder()
+    initial_angle = gyro_sensor.get_value()[0]
+    initial_left = left_motor.get_encoder()
+    initial_right = right_motor.get_encoder()
+    last_error = 0
+    integral = 0
 
     left_motor.set_power(left_speed * left_factor)
     right_motor.set_power(right_speed * right_factor)
 
     while True:
-        left_ticks = left_motor.get_encoder() - current_left
-        right_ticks = right_motor.get_encoder() - current_right
+        current_left = left_motor.get_encoder() - initial_left
+        current_right = right_motor.get_encoder() - initial_right
+        current_angle = gyro_sensor.get_angle()[0]
+        
+        error = initial_angle - current_angle
+        derivative = error - last_error
+        integral += error
+        correction = Kp * error + Ki * integral + Kd * derivative
+        
+        left_motor.set_power(left_speed + correction)
+        right_motor.set_power(right_speed - correction)
+        last_error = error
 
-        if abs(left_ticks) >= target_ticks and abs(right_ticks) >= target_ticks:
+        if type == 'move' and (abs(current_left) >= target_ticks and abs(current_right) >= target_ticks):
             break
+        elif type == 'turn' and abs(current_angle - initial_angle) >= target_ticks:
+            break
+
+        time.sleep(0.01)
 
     stop()
 
