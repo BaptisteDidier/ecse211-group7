@@ -12,8 +12,36 @@ global tuple_list
 node_number = 1
 TOUCH_SENSOR = TouchSensor(1)
 US_SENSOR = EV3UltrasonicSensor(2)
+GYRO_SENSOR = EV3GyroSensor(4)
 
 
+def run_in_background(action):
+    """
+    Runs the given function in the background of the main thread
+    """
+    Thread(target=action, daemon=True).start()
+
+def initial_movement():
+    """
+    Does the initial 90 degrees sweep to identify all the cubes to go to based on ultrasonic sensor's data
+    """
+    Motion.turn(50, 90, 'left')  
+    Motion.turn(50, 90, 'right')  
+    time.sleep(0.5)
+
+def iniitial_sweep():
+    run_in_background(initial_movement)
+    output_file = open(US_SENSOR_DATA_FILE, "w")
+    new_value = US_SENSOR.get_value()
+    # we need to use the gyro sensor and not the ultrasonic sensor to get the angle of the sweep (from 0 to 90) 
+    angle = GYRO_SENSOR.get_angle()[0]
+    if new_value +0.5 < cur_value or new_value -0.5 > cur_value:
+        print("invalid: same cube")
+    elif new_value <= 30: #SET THIS BACK TO 120 AFTER
+        output_file.write(f"{node_number}, {new_value}, {angle}\n")
+        node_number += 1
+        node_list.append(node_number)
+        cur_value = new_value
 
 def generate_node_edges(node_numbers):
     edges = list(itertools.combinations(node_numbers, 2))
@@ -22,6 +50,7 @@ def generate_node_edges(node_numbers):
 def collect_data_from_sweep(cur_value, node_list): # SET  node_number to 0 first
     output_file = open(US_SENSOR_DATA_FILE, "w")
     new_value = US_SENSOR.get_value()
+    # we need to use the gyro sensor and not the ultrasonic sensor to get the angle of the sweep (from 0 to 90) 
     angle = US_SENSOR.get_angle()
     if new_value +0.5 < cur_value or new_value -0.5 > cur_value:
         print("invalid: same cube")
