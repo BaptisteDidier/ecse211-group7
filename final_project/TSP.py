@@ -1,28 +1,6 @@
 import matplotlib.pyplot as plt
 import random
 import networkx as nx
-import math
-
-nodelist =[]
-
-def compute_weight(node1, node2, length1, length2, angle):
-    if node1 == node2 and length2 == None:
-        return length1
-    elif node2 == node1 and length1 == None:
-        return length2
-    else:
-        new_edge_width = math.sqrt((length1)**2+(length2)**2 - 2 * length1 * length2 * math.cos(angle))
-        return new_edge_width
-
-def add_edge_weight_tuple(node1, node2, width, edge_weight_list): #adds a new tuple element in list that will be used in graph and returns it
-    global nodelist
-    if node1 not in nodelist:
-        nodelist.append(node1)
-    if node2 not in nodelist:
-        nodelist.append(node2)
-    new_tuple = (node1, node2, width)
-    edge_weight_list.append(new_tuple)
-    return new_tuple
 
 # we need to somehow add into a tuple list (node1, node2, weight) and also nodes_list=[numbers in here]
 def generate_complete_graph(nodes_list,edge_weight_list): 
@@ -80,4 +58,5 @@ def nearest_neighbor_tsp(G, startNode=None):
 
 if __name__ == "__main__":
     #G = generate_complete_graph(5)
-    nearest_neighbor_tsp(G,0)
+    #nearest_neighbor_tsp(G,0)
+    print("1")
