@@ -12,6 +12,7 @@ right_motor.reset_encoder()
 x = 0.0
 y = 0.0
 theta = 0.0
+gyro_sensor.reset_measure()
 wheel_diameter = 4.2
 wheel_circumference = math.pi * wheel_diameter
 wheel_distance = 7.83
