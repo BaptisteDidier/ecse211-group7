@@ -65,8 +65,52 @@ def nearest_neighbor_tsp(G, startNode=None):
     
     plt.ioff()
     plt.show()
-
+    
+#updated - Marleine 
 if __name__ == "__main__":
     #G = generate_complete_graph(5)
     #nearest_neighbor_tsp(G,0)
-    print("1")
+    ##print("1")
+    # Initialize graphs and sensors
+    node_list = [0, 1, 2, 3, 4]  
+    edge_weight_list = [(0, 1, 10), (1, 2, 15), (2, 3, 10), (3, 4, 20)]  # to be changed 
+    tsp = TSP(node_list, edge_weight_list)
+
+    color_sensor = ColorSensor(INPUT_1)
+    ultrasonic_sensor = UltrasonicSensor(INPUT_2)
+    object_det = ObjectDet(color_sensor, ultrasonic_sensor)
+
+    current_node = 0
+    unvisited_nodes = set(node_list)
+
+    print("Starting navigation")
+
+    while unvisited_nodes:
+        # Detect water and cube
+        if object_det.detect_water(current_node):
+            tsp.update_graph_for_water_or_obstacle(current_node)
+        if object_det.detect_obstacle(current_node):
+            tsp.update_graph_for_water_or_obstacle(current_node)
+        # Recalculate the path to the next one/cube
+        unvisited_nodes -= {current_node}
+        if not unvisited_nodes:
+            print("All nodes visited or inaccessible.")
+            break
+        path, next_node = tsp.recalculate_path(current_node, unvisited_nodes)
+        if path is None:
+            break
+
+
+        print(f"Following path: {path}")
+        for node in path[1:]:  # Skip the current node
+            print(f"Moving to node {node}")
+            # Insert motion control logic here (e.g., turn, move forward)
+            current_node = node
+
+        #  If all cubes collected
+        if TOUCH_SENSOR.is_pressed():  # Add an ending condition based on the task
+            print("Task completed!")
+            break
+
+    print("Navigation complete.")
+
