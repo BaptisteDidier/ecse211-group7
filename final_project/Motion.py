@@ -70,8 +70,8 @@ def move(speed=50, distance=10, direction='forward'):
         
         correction = pidController.compute(initial_angle, current_angle)
         
-        left_motor.set_power(speed + correction)
-        right_motor.set_power(speed - correction)
+        left_motor.set_power(speed - correction)
+        right_motor.set_power(speed + correction)
         
         if min(abs(current_left), abs(current_right)) >= target_ticks:
             break
@@ -99,14 +99,13 @@ def turn(speed=50, angle=90, direction='right'):
 
     while True:
         current_angle = gyro_sensor.get_abs_measure()
-        
         correction = pidController.compute(target_angle, current_angle)
         
         if direction == 'right':
             left_motor.set_power(speed + correction)
-            right_motor.set_power(-(speed + correction))
+            right_motor.set_power(-(speed - correction))
         else:
-            left_motor.set_power(-(speed + correction))
+            left_motor.set_power(-(speed - correction))
             right_motor.set_power(speed + correction)
         
         if abs(current_angle - initial_angle) >= abs(angle):
