@@ -87,8 +87,7 @@ def turn(speed=50, angle=90, direction='right'):
     """
     if direction not in ['right', 'left']: 
         raise ValueError("Direction must be 'right' or 'left'")
-    initial_angle = gyro_sensor.get_abs_measure()
-    target_angle = initial_angle + (angle if direction == 'right' else -angle)
+    target_angle = gyro_sensor.get_abs_measure() + (angle if direction == 'right' else -angle)
     pidController.reset()
 
     if direction == 'right':
@@ -109,7 +108,7 @@ def turn(speed=50, angle=90, direction='right'):
             left_motor.set_power(-(speed - correction))
             right_motor.set_power(speed + correction)
         
-        if abs(current_angle - initial_angle) >= abs(angle):
+        if abs(current_angle - target_angle) <= 0.2:
             break
  
         time.sleep(0.01)
