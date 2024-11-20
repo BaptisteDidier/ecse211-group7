@@ -19,7 +19,7 @@ wheel_distance = 7.83
 # PID (adjust if needed)
 Kp = 0.6
 Ki = 0.0
-Kd = 0.3
+Kd = 0.0
 
 class PIDController:
     def __init__(self, kp=Kp, ki=Ki, kd=Kd):
@@ -89,15 +89,16 @@ def turn(speed=50, angle=90, direction='right'):
     """
     if direction not in ['right', 'left']: 
         raise ValueError("Direction must be 'right' or 'left'")
-    target_angle = gyro_sensor.get_abs_measure() + (angle if direction == 'right' else -angle)
     pidController.reset()
 
     if direction == 'right':
         left_motor.set_power(-speed)
         right_motor.set_power(speed)
+        target_angle = (gyro_sensor.get_abs_measure() + angle) % 360
     else:
         left_motor.set_power(speed)
         right_motor.set_power(-speed)
+        target_angle = (gyro_sensor.get_abs_measure() - angle) % 360
 
     while True:
         current_angle = gyro_sensor.get_abs_measure()
@@ -110,7 +111,8 @@ def turn(speed=50, angle=90, direction='right'):
             left_motor.set_power(speed + correction)
             right_motor.set_power(- (speed - correction))
         
-        if abs(current_angle - target_angle) <= 0.2:
+        angle_difference = (current_angle - target_angle + 180) % 360 - 180
+        if abs(angle_difference) <= 0.2:
             break
  
         time.sleep(0.01)
