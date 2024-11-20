@@ -17,9 +17,9 @@ wheel_circumference = math.pi * wheel_diameter
 wheel_distance = 7.83
 
 # PID (adjust if needed)
-Kp = 0.5
-Ki = 0.0
-Kd = 0.0
+Kp = 2.0
+Ki = 0.1
+Kd = 0.5
 
 # Sweeping
 sweeping_motor.set_limits(50, 360)
@@ -155,11 +155,12 @@ def odometry(sampling_rate=0.1):
         delta_right_distance = encoder_to_distance(delta_right)
 
         delta_distance = (delta_left_distance + delta_right_distance) / 2.0
+        delta_theta = (delta_right_distance - delta_left_distance) / wheel_distance
 
-        x += delta_distance * math.cos(theta)
-        y += delta_distance * math.sin(theta)
-        delta_theta = gyro_sensor.get_abs_measure() - theta
-        theta += delta_theta
+        x -= delta_distance * math.cos(math.rad(theta))
+        y -= delta_distance * math.sin(math.rad(theta))
+        theta += math.degrees(delta_theta) 
+        theta = theta % 360
 
         left_ticks, right_ticks = new_left_ticks, new_right_ticks
         time.sleep(sampling_rate)
