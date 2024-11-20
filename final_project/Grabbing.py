@@ -1,4 +1,5 @@
 from Resources import gate_motor, block_color_sensor
+from Motion import move
 
 # Global variables
 motor_power = 100
@@ -44,13 +45,23 @@ def is_valid_block():
         print("Invalid reading")
         return False
     
-    if (array[0] < 35 or array[0] > 55): # need to test to find the correct intervals
+    if not (35 < array[0] <55): # need to test to find the correct intervals
         return False
     
-    if (array[1] < 35 or array[1] > 55): # need to test to find the correct intervals
+    if not (35 < array[1] <55): # need to test to find the correct intervals
         return False
     
-    if (array[2] < 35 or array[2] > 55): # need to test to find the correct intervals
+    if not (35 < array[2] <55): # need to test to find the correct intervals
         return False
     
     return True
+
+def collect_block():
+    """
+    Make the grabbing choice assuming that the robot is in the correct position
+    """  
+    if is_valid_block():
+        open()
+        move(40, 11)
+        close()
+        move(40, 11, 'backward')
