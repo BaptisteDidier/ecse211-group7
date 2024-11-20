@@ -26,7 +26,7 @@ def get_normalized_rgb(number=5):
     Returns the normalized values of the fixed color sensor
     """
     array = list()
-    for i in range(number):
+    for _ in range(number):
         rgb = block_color_sensor.get_rgb()
         if any(value is None or value == 0 for value in rgb):
             print("Invalid reading")
@@ -44,13 +44,13 @@ def is_valid_block():
     while any(value is None or value == 0 for value in array):
         array = get_normalized_rgb()
     
-    if not (155 < array[0] < 205): # need to test to find the correct intervals
+    if not (155 < array[0] < 205):
         return False
     
-    if not (30 < array[1] <95): # need to test to find the correct intervals
+    if not (30 < array[1] <95):
         return False
     
-    if not (0 < array[2] < 20): # need to test to find the correct intervals
+    if not (0 < array[2] < 20):
         return False
     
     return True

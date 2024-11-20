@@ -158,7 +158,7 @@ def odometry(sampling_rate=0.1):
 
         x += delta_distance * math.cos(theta)
         y += delta_distance * math.sin(theta)
-        delta_theta = math.radians(gyro_sensor.get_abs_measure() - theta)
+        delta_theta = gyro_sensor.get_abs_measure() - theta
         theta += delta_theta
 
         left_ticks, right_ticks = new_left_ticks, new_right_ticks
