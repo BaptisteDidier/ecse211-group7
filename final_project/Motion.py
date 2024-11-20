@@ -90,22 +90,22 @@ def turn(speed=50, angle=90, direction='right'):
     pidController.reset()
 
     if direction == 'right':
-        left_motor.set_power(speed)
-        right_motor.set_power(-speed)
-    else:
         left_motor.set_power(-speed)
         right_motor.set_power(speed)
+    else:
+        left_motor.set_power(speed)
+        right_motor.set_power(-speed)
 
     while True:
         current_angle = gyro_sensor.get_abs_measure()
         correction = pidController.compute(target_angle, current_angle)
         
         if direction == 'right':
-            left_motor.set_power(speed + correction)
-            right_motor.set_power(-(speed - correction))
-        else:
             left_motor.set_power(-(speed - correction))
             right_motor.set_power(speed + correction)
+        else:
+            left_motor.set_power(speed + correction)
+            right_motor.set_power(- (speed - correction))
         
         if abs(current_angle - target_angle) <= 0.2:
             break
