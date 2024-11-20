@@ -17,7 +17,11 @@ def run_in_background(action):
 def main():
     
     try:
-        Grabbing.collect_block()
+        run_in_background(Motion.odometry())
+        Motion.move(50, 20)
+        Motion.turn(50, 90)
+        Motion.move(50, 10)
+        print(Motion.get_position())
         
     except KeyboardInterrupt:
         pass

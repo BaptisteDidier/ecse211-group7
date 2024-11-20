@@ -1,6 +1,5 @@
 from Resources import ultrasonic_sensor
 from main import run_in_background
-from threading import Thread
 import Motion
 import math
 
@@ -8,7 +7,9 @@ import math
 obstacles = list()
 costmap = [[0 for _ in range(122)] for _ in range(122)]
 tolerance = 1
+collected_cubes = 0
 
+# Methods
 def get_obstacle_position():
     """
     Get the position of the obstacle in front depending on the current position
