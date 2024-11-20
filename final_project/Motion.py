@@ -189,16 +189,27 @@ def get_euclidean_distance(current_x, current_y, target_x, target_y):
 
 def sweep():
     """
-    Make the sweeping motion
+    Make the sweeping motion until blue is sampled
     """
     while True:
-        sweeping_motor.set_position_relative(180)
-        sweeping_motor.set_position_relative(-180)
+        sweeping_motor.set_power(20)
+        while (sweeping_motor.get_encoder() < 90):
+            rgb = get_normalized_value()
+            if (0 < rgb[0] < 50) and (0 < rgb[1] < 50) and (0 < rgb[2] < 50):
+                angle = sweeping_motor.get_encoder()
+                sweeping_motor.set_power(0)
+                sweeping_motor.set_position_relative(-angle)
+                return angle
+                
+        sweeping_motor.set_power(-20)
+        while(sweeping_motor.get_encoder() > -90):
+            rgb = get_normalized_value()
+            if (0 < rgb[0] < 50) and (0 < rgb[1] < 50) and (0 < rgb[2] < 50):
+                angle = sweeping_motor.get_encoder()
+                sweeping_motor.set_power(0)
+                sweeping_motor.set_position_relative(-angle)
+                return angle
         
-        #sweeping_motor.set_power(20)
-        #sleep(1.5)
-        #sweeping_motor.set_power(-20)
-        #sleep(1.5)
 
 def get_normalized_value():
     """
