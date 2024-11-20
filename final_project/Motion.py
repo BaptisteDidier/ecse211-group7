@@ -19,7 +19,7 @@ wheel_distance = 7.83
 
 # PID (adjust if needed)
 Kp = 2.0
-Ki = 0.0
+Ki = 0.1
 Kd = 1.0
 
 class PIDController:
