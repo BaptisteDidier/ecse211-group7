@@ -1,4 +1,4 @@
-from Resources import left_motor, right_motor, gyro_sensor, sweeping_motor
+from Resources import left_motor, right_motor, gyro_sensor, sweeping_motor, scanning_color_sensor
 import time
 import math
 
@@ -199,4 +199,16 @@ def sweep():
         #sleep(1.5)
         #sweeping_motor.set_power(-20)
         #sleep(1.5)
-        
+
+def get_normalized_value():
+    """
+    Detects the normalized color of the ground
+    """
+    rgb = scanning_color_sensor.get_rgb()
+
+    if any(value is None or value == 0 for value in rgb):
+        print("Invalid reading")
+        return [0, 0, 0]
+    
+    total = sum(rgb)  
+    return [round(255 * c / total, 0) for c in rgb]
