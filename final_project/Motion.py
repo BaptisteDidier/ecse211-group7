@@ -191,3 +191,9 @@ def sweep():
     while True:
         sweeping_motor.set_position_relative(180)
         sweeping_motor.set_position_relative(-180)
+        
+        #sweeping_motor.set_power(20)
+        #sleep(1.5)
+        #sweeping_motor.set_power(-20)
+        #sleep(1.5)
+        
