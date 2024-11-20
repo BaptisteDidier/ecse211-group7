@@ -1,4 +1,4 @@
-from Resources import left_motor, right_motor, gyro_sensor
+from Resources import left_motor, right_motor, gyro_sensor, sweeping_motor
 import time
 import math
 
@@ -17,9 +17,13 @@ wheel_circumference = math.pi * wheel_diameter
 wheel_distance = 7.83
 
 # PID (adjust if needed)
-Kp = 0.6
+Kp = 0.5
 Ki = 0.0
 Kd = 0.0
+
+# Sweeping
+sweeping_motor.set_limits(50, 360)
+sweeping_motor.reset_encoder()
 
 class PIDController:
     def __init__(self, kp=Kp, ki=Ki, kd=Kd):
@@ -182,3 +186,8 @@ def get_euclidean_distance(current_x, current_y, target_x, target_y):
     Returns the distance between two points
     """
     return ((target_x - current_x) ** 2 + (target_y - current_y) ** 2) ** 0.5
+
+def sweep():
+    while True:
+        sweeping_motor.set_position_relative(180)
+        sweeping_motor.set_position_relative(-180)
