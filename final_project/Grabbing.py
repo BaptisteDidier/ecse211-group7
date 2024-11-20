@@ -41,17 +41,16 @@ def is_valid_block():
     Compares an array of normalized rgb values to see whether it is valid
     """
     array = get_normalized_rgb()
-    if any(value is None or value == 0 for value in array):
-        print("Invalid reading")
+    while any(value is None or value == 0 for value in array):
+        array = get_normalized_rgb()
+    
+    if not (165 < array[0] < 205): # need to test to find the correct intervals
         return False
     
-    if not (35 < array[0] <55): # need to test to find the correct intervals
+    if not (30 < array[1] <85): # need to test to find the correct intervals
         return False
     
-    if not (35 < array[1] <55): # need to test to find the correct intervals
-        return False
-    
-    if not (35 < array[2] <55): # need to test to find the correct intervals
+    if not (0 < array[2] < 20): # need to test to find the correct intervals
         return False
     
     return True
@@ -65,3 +64,6 @@ def collect_block():
         move(40, 11)
         close()
         move(40, 11, 'backward')
+
+    else:
+        move(40, 5, 'backward')
