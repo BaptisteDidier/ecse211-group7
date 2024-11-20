@@ -188,6 +188,9 @@ def get_euclidean_distance(current_x, current_y, target_x, target_y):
     return ((target_x - current_x) ** 2 + (target_y - current_y) ** 2) ** 0.5
 
 def sweep():
+    """
+    Make the sweeping motion
+    """
     while True:
         sweeping_motor.set_position_relative(180)
         sweeping_motor.set_position_relative(-180)
