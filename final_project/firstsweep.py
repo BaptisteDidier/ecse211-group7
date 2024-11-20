@@ -38,6 +38,7 @@ def generate_node_edges(node_numbers):
     return edges
 
 def collect_data_from_sweep(cur_value, node_list): # SET  node_number to 0 first
+    global node_number
     output_file = open(US_SENSOR_DATA_FILE, "w")
     new_value = US_SENSOR.get_value()
     #we need to use the gyro sensor and not the ultrasonic sensor to get the angle of the sweep (from 0 to 90) 
@@ -46,8 +47,8 @@ def collect_data_from_sweep(cur_value, node_list): # SET  node_number to 0 first
         print("invalid: same cube")
     elif new_value <= 30: #SET THIS BACK TO 120 AFTER
         output_file.write(f"{node_number}, {new_value}, {angle}\n")
-        node_number += 1
         node_list.append(node_number)
+        node_number += 1
         cur_value = new_value
 # Updated - Marleine (I kept the orginal version as a comment ahead of this)
 """
@@ -108,7 +109,7 @@ if __name__ == "__main__":
     print("Done waiting.")
     node_number = 0
     node_list = []
-    tuple_list = tuple()
+    tuple_list = []
     first_value = US_SENSOR.get_value()
     run_in_background(initial_movement)
     while (True):
