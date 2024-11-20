@@ -5,18 +5,10 @@ import networkx as nx
 # we need to somehow add into a tuple list (node1, node2, weight) and also nodes_list=[numbers in here]
 def generate_complete_graph(nodes_list,edge_weight_list): 
     # makes a graph using the number of nodes and an arbitrary weight. For our project we need to get the edge weight values in between nodes
-    G = nx.graph()
+    G = nx.complete_graph(len(nodes_list))
     G.add_nodes_from(nodes_list)
-##Updated - Marleine
-    # How about this? 
-    for node1, node2, weight in edge_weight_list:
-        if node1 in water_nodes or node2 in water_nodes:
-            weight = float('inf')  # Mark water nodes as inaccessible
-        if node1 in obstacle_nodes or node2 in obstacle_nodes:
-            weight = float('inf')  # Mark obstacle nodes as inaccessible
-        G.add_weighted_edges_from([(node1, node2, weight)])
-    
-   ## G.add_weighted_edges_from(edge_weight_list)
+    for u, v, weight in edge_weight_list:
+        G[u][v]['weight'] = weight
     return G
 
 def plot_graph_step(G, tour, currentnode, pos):
@@ -34,7 +26,7 @@ def plot_graph_step(G, tour, currentnode, pos):
 def calculate_tour_cost(G, tour):
     return sum(G[tour[i]][tour[i+1]]['weight'] for i in range(len(tour)-1))
 
-def nearest_neighbor_tsp(G, startNode=None):
+def nearest_neighbor_tsp(G, startNode):
     if startNode is None:
         startNode = random.choice(list(G.nodes))
     
@@ -60,12 +52,13 @@ def nearest_neighbor_tsp(G, startNode=None):
     print(tour)
     tour_cost = calculate_tour_cost(G, tour)
     print(f"Construction heuristic tour cost: {tour_cost}")
+    plt.ioff()
+    plt.show()
     return tour
     
     
-    plt.ioff()
-    plt.show()
-    
+#We dont need a main for this, its the heuristic - Tyler
+"""
 #updated - Marleine 
 if __name__ == "__main__":
     #G = generate_complete_graph(5)
@@ -114,3 +107,4 @@ if __name__ == "__main__":
 
     print("Navigation complete.")
 
+"""
