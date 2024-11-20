@@ -17,9 +17,9 @@ wheel_circumference = math.pi * wheel_diameter
 wheel_distance = 7.83
 
 # PID (adjust if needed)
-Kp = 2.0
-Ki = 0.1
-Kd = 1.0
+Kp = 0.6
+Ki = 0.0
+Kd = 0.3
 
 class PIDController:
     def __init__(self, kp=Kp, ki=Ki, kd=Kd):
@@ -66,12 +66,15 @@ def move(speed=50, distance=10, direction='forward'):
     while True:
         current_left = left_motor.get_encoder() - initial_left
         current_right = right_motor.get_encoder() - initial_right
-        current_angle = gyro_sensor.get_abs_measure()
-        
+        current_angle = gyro_sensor.get_abs_measure() 
         correction = pidController.compute(initial_angle, current_angle)
-        
-        left_motor.set_power(speed - correction)
-        right_motor.set_power(speed + correction)
+                
+        if direction == 'forward':
+            left_motor.set_power(-speed + correction)
+            right_motor.set_power(-speed - correction)
+        else:
+            left_motor.set_power(speed - correction)
+            right_motor.set_power(speed + correction)
         
         if min(abs(current_left), abs(current_right)) >= target_ticks:
             break

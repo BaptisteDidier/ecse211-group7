@@ -44,10 +44,10 @@ def is_valid_block():
     while any(value is None or value == 0 for value in array):
         array = get_normalized_rgb()
     
-    if not (165 < array[0] < 205): # need to test to find the correct intervals
+    if not (155 < array[0] < 205): # need to test to find the correct intervals
         return False
     
-    if not (30 < array[1] <85): # need to test to find the correct intervals
+    if not (30 < array[1] <95): # need to test to find the correct intervals
         return False
     
     if not (0 < array[2] < 20): # need to test to find the correct intervals
@@ -61,7 +61,7 @@ def collect_block():
     """  
     if is_valid_block():
         open()
-        move(40, 11)
+        move(40, 11, 'forward')
         close()
         move(40, 11, 'backward')
 

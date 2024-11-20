@@ -17,12 +17,7 @@ def run_in_background(action):
 def main():
     
     try:
-        Motion.calibrate()
-        Motion.move(50, 20, 'forward')
-                
-        Grabbing.open()
-        time.sleep(2)
-        Grabbing.close()
+        Grabbing.collect_block()
         
     except KeyboardInterrupt:
         pass
