@@ -12,7 +12,8 @@ sweeping_motor = Motor("D")
 ultrasonic_sensor = EV3UltrasonicSensor(1)
 block_color_sensor = EV3ColorSensor(2)
 scanning_color_sensor = EV3ColorSensor(4)
-gyro_sensor = EV3GyroSensor(3).set_mode("abs")
+gyro_sensor = EV3GyroSensor(3)
+gyro_sensor.set_mode("abs")
 gyro_sensor.reset_measure()
 
 def initialize_components():
