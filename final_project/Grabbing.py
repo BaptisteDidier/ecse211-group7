@@ -1,7 +1,6 @@
 from Resources import gate_motor, block_color_sensor
 from Motion import move
 from CostMap import *
-from time import sleep
 
 # Global variables
 motor_power = 100
@@ -15,17 +14,13 @@ def open_gate():
     """
     Open the gate
     """
-    gate_motor.set_dps(90)
-    sleep(1)
-    gate_motor.set_dps(0)
+    gate_motor.set_position_relative(90)
         
 def close_gate():
     """
     Close the gate
     """
-    gate_motor.set_dps(-90)
-    sleep(1)
-    gate_motor.set_dps(0)
+    gate_motor.set_position_relative(-90)
     
 def get_normalized_rgb(number=5):
     """
