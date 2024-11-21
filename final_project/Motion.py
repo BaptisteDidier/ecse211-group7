@@ -1,8 +1,10 @@
 from Resources import left_motor, right_motor, gyro_sensor, sweeping_motor, scanning_color_sensor
 import time
 import math
+from main import run_in_background
 
 # Motion
+angle_tolerance = 2
 left_motor.set_limits(100, 1440)
 right_motor.set_limits(100, 1440)
 left_motor.reset_encoder()
@@ -17,9 +19,9 @@ wheel_circumference = math.pi * wheel_diameter
 wheel_distance = 7.83
 
 # PID (adjust if needed)
-Kp = 0.2
+Kp = 0.04
 Ki = 0.0
-Kd = 0.05
+Kd = 0.01
 
 # Sweeping
 sweeping_motor.set_limits(50, 360)
@@ -46,7 +48,7 @@ class PIDController:
 
 
 # Public methods
-pidController = PIDController()
+#pidController = PIDController()
 
 def move(speed=50, distance=10, direction='forward'):
     """
@@ -55,30 +57,26 @@ def move(speed=50, distance=10, direction='forward'):
     if direction not in ['forward', 'backward']: 
         raise ValueError("Direction must be 'forward' or 'backward'")
     target_ticks = (distance * 360) / wheel_circumference
-    initial_angle = gyro_sensor.get_abs_measure()
     initial_left = left_motor.get_encoder()
     initial_right = right_motor.get_encoder()
-    pidController.reset()
-
-    if direction == 'forward':
-        left_motor.set_power(-speed)
-        right_motor.set_power(-speed)
-    else:
-        left_motor.set_power(speed)
-        right_motor.set_power(speed)
     
-    while True:
+    sweeping = run_in_background(sweep)
+    
+    while sweeping.is_alive():
         current_left = left_motor.get_encoder() - initial_left
         current_right = right_motor.get_encoder() - initial_right
-        current_angle = gyro_sensor.get_abs_measure() 
-        correction = pidController.compute(initial_angle, current_angle)
-                
-        if direction == 'forward':
-            left_motor.set_power(-speed + correction)
-            right_motor.set_power(-speed - correction)
+
+        if current_left != 0 and current_right != 0:
+            left_factor, right_factor = (1, current_left / current_right) if current_left <= current_right else (current_right / current_left, 1)
         else:
-            left_motor.set_power(speed - correction)
-            right_motor.set_power(speed + correction)
+            left_factor, right_factor = 1, 1
+       
+        if direction == 'forward':
+            left_motor.set_power(-speed*left_factor)
+            right_motor.set_power(-speed*right_factor)
+        else:
+            left_motor.set_power(speed*left_factor)
+            right_motor.set_power(speed*right_factor)
         
         if min(abs(current_left), abs(current_right)) >= target_ticks:
             break
@@ -93,30 +91,28 @@ def turn(speed=50, angle=90, direction='right'):
     """
     if direction not in ['right', 'left']: 
         raise ValueError("Direction must be 'right' or 'left'")
-    pidController.reset()
+    target_ticks = (angle * wheel_distance) / wheel_diameter
+    initial_left = left_motor.get_encoder()
+    initial_right = right_motor.get_encoder()
+    sweeping = run_in_background(sweep)
 
-    if direction == 'right':
-        left_motor.set_power(-speed)
-        right_motor.set_power(speed)
-        target_angle = (gyro_sensor.get_abs_measure() + angle) % 360
-    else:
-        left_motor.set_power(speed)
-        right_motor.set_power(-speed)
-        target_angle = (gyro_sensor.get_abs_measure() - angle) % 360
-
-    while True:
-        current_angle = gyro_sensor.get_abs_measure()
-        correction = pidController.compute(target_angle, current_angle)
+    while sweeping.is_alive():
+        current_left = left_motor.get_encoder() - initial_left
+        current_right = right_motor.get_encoder() - initial_right
         
-        if direction == 'right':
-            left_motor.set_power(-(speed - correction))
-            right_motor.set_power(speed + correction)
+        if current_left != 0 and current_right != 0:
+            left_factor, right_factor = (1, abs(current_left / current_right)) if abs(current_left) <= abs(current_right) else (abs(current_right / current_left), 1)
         else:
-            left_motor.set_power(speed + correction)
-            right_motor.set_power(- (speed - correction))
+            left_factor, right_factor = 1, 1
+            
+        if direction == 'right':
+            left_motor.set_power(-speed*left_factor)
+            right_motor.set_power(speed*right_factor)
+        else:
+            left_motor.set_power(speed*left_factor)
+            right_motor.set_power(-speed*right_factor)
         
-        angle_difference = (current_angle - target_angle + 180) % 360 - 180
-        if abs(angle_difference) <= 0.2:
+        if min(abs(current_left), abs(current_right)) >= target_ticks:
             break
  
         time.sleep(0.01)
@@ -196,7 +192,7 @@ def sweep():
         sweeping_motor.set_power(20)
         while (sweeping_motor.get_encoder() < 90):
             rgb = get_normalized_value()
-            if (0 < rgb[0] < 50) and (0 < rgb[1] < 50) and (0 < rgb[2] < 50):
+            if (40 < rgb[0] < 70) and (40 < rgb[1] < 80) and (125 < rgb[2] < 170):
                 angle = sweeping_motor.get_encoder()
                 sweeping_motor.set_power(0)
                 sweeping_motor.set_position_relative(-angle)
@@ -205,7 +201,7 @@ def sweep():
         sweeping_motor.set_power(-20)
         while(sweeping_motor.get_encoder() > -90):
             rgb = get_normalized_value()
-            if (0 < rgb[0] < 50) and (0 < rgb[1] < 50) and (0 < rgb[2] < 50):
+            if (40 < rgb[0] < 70) and (40 < rgb[1] < 80) and (125 < rgb[2] < 170):
                 angle = sweeping_motor.get_encoder()
                 sweeping_motor.set_power(0)
                 sweeping_motor.set_position_relative(-angle)
@@ -218,9 +214,8 @@ def get_normalized_value():
     """
     rgb = scanning_color_sensor.get_rgb()
 
-    if any(value is None or value == 0 for value in rgb):
-        print("Invalid reading")
-        return [0, 0, 0]
+    while any(value is None or value == 0 for value in rgb):
+        rgb = scanning_color_sensor.get_rgb()
     
     total = sum(rgb)  
     return [round(255 * c / total, 0) for c in rgb]
