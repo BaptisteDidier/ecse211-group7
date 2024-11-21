@@ -214,8 +214,8 @@ def get_normalized_value():
     """
     rgb = scanning_color_sensor.get_rgb()
 
-    while any(value is None or value == 0 for value in rgb):
-        rgb = scanning_color_sensor.get_rgb()
+    if any(value is None or value == 0 for value in rgb):
+        return [0, 0, 0]
     
     total = sum(rgb)  
     return [round(255 * c / total, 0) for c in rgb]
