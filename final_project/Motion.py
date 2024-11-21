@@ -81,7 +81,7 @@ def move(speed=50, distance=10, direction='forward'):
         if min(abs(current_left), abs(current_right)) >= target_ticks:
             break
         
-        time.sleep(0.01)
+        time.sleep(0.1)
 
     stop()
 
@@ -115,7 +115,7 @@ def turn(speed=50, angle=90, direction='right'):
         if min(abs(current_left), abs(current_right)) >= target_ticks:
             break
  
-        time.sleep(0.01)
+        time.sleep(0.1)
 
     stop()
 
