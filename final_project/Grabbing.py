@@ -10,13 +10,13 @@ gate_motor.reset_encoder()
      
      
 # Public methods   
-def open():
+def open_gate():
     """
     Open the gate
     """
     gate_motor.set_position_relative(90)
         
-def close():
+def close_gate():
     """
     Close the gate
     """
@@ -45,10 +45,10 @@ def is_valid_block():
     while any(value is None or value == 0 for value in array):
         array = get_normalized_rgb()
     
-    if (195 < array[0] < 205) and (30 < array[1] < 40) and (15 < array[2] < 20): # Yellow
+    if (190 < array[0] < 205) and (30 < array[1] < 50) and (15 < array[2] < 20): # Orange
         return True
     
-    if (155 < array[0] < 175) and (70 < array[1] < 95) and (0 < array[2] < 10): # Orange
+    if (155 < array[0] < 175) and (70 < array[1] < 95) and (0 < array[2] < 10): # Yellow
         return True
     
     return False
@@ -58,10 +58,10 @@ def collect_block():
     Make the grabbing choice assuming that the robot is in the correct position
     """  
     if is_valid_block():
-        collected_cubes += 1
-        open()
+        #collected_cubes += 1
+        open_gate()
         move(40, 11, 'forward')
-        close()
+        close_gate()
         move(40, 11, 'backward')
 
     else:
@@ -71,7 +71,7 @@ def eject():
     """
     Places the cubes onto the garbage can
     """
-    open()
+    open_gate()
     move(40, 33, 'backward')
-    close()
-    collected_cubes = 0
+    close_gate()
+    #collected_cubes = 0
