@@ -219,3 +219,5 @@ def get_normalized_value():
     
     total = sum(rgb)  
     return [round(255 * c / total, 0) for c in rgb]
+
+
