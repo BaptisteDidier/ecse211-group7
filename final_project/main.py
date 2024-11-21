@@ -12,7 +12,22 @@ def run_in_background(action):
     """
     Thread(target=action, daemon=True).start()
     
+def go_to_block():
+    temp_list = []
+    run_in_background(Motion.turn(30, 90))
+    if ultrasonic_sensor.get_cm() < 110 and ultrasonic_sensor.get_cm > 0:
+        distance = ultrasonic_sensor.get_cm()
+        left_motor_val = Motion.left_motor.get_encoder()
+        right_motor_val = Motion.right_motor.get_encoder()
+        temp_list.append((distance, left_motor_val, right_motor_val))
+    
+    smallest_tuple = min(temp_list, key=lambda x: x[0])
+    cube_x_pos = Motion.x + ultrasonic_sensor.get_cm()*math.cos(Motion.theta)
+    cube_y_pos = Motion.y + ultrasonic_sensor.get_cm()*math.sin(Motion.theta)
+    Motion.move_to(cube_x_pos, cube_y_pos)
+        
 
+    
 # Main loop
 def main():
     
