@@ -6,7 +6,7 @@ import math
 # Global variable
 obstacles = list()
 costmap = [[0 for _ in range(122)] for _ in range(122)]
-tolerance = 1
+tolerance = 3
 collected_cubes = 0
 
 # Methods

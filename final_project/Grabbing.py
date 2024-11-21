@@ -45,22 +45,20 @@ def is_valid_block():
     while any(value is None or value == 0 for value in array):
         array = get_normalized_rgb()
     
-    if not (155 < array[0] < 205):
-        return False
+    if (195 < array[0] < 205) and (30 < array[1] < 40) and (15 < array[2] < 20): # Yellow
+        return True
     
-    if not (30 < array[1] <95):
-        return False
+    if (155 < array[0] < 175) and (70 < array[1] < 95) and (0 < array[2] < 10): # Orange
+        return True
     
-    if not (0 < array[2] < 20):
-        return False
-    
-    return True
+    return False
 
 def collect_block():
     """
     Make the grabbing choice assuming that the robot is in the correct position
     """  
     if is_valid_block():
+        collected_cubes += 1
         open()
         move(40, 11, 'forward')
         close()
@@ -68,3 +66,12 @@ def collect_block():
 
     else:
         move(40, 5, 'backward')
+        
+def eject():
+    """
+    Places the cubes onto the garbage can
+    """
+    open()
+    move(40, 33, 'backward')
+    close()
+    collected_cubes = 0
