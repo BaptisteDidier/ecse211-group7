@@ -20,8 +20,8 @@ def get_obstacle_position():
         return None;
     
     x, y, theta = Motion.get_position()
-    new_x = x + distance*math.cos(theta)
-    new_y = y + distance*math.sin(theta)
+    new_x = x + distance*math.cos(math.radians(theta))
+    new_y = y + distance*math.sin(math.radians(theta))
     
     if not (0 < new_x < 122) or not (0 < new_y < 122): # if the sensor sees the walls
         return None

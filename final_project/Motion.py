@@ -153,8 +153,8 @@ def odometry(sampling_rate=0.1):
         delta_distance = (delta_left_distance + delta_right_distance) / 2.0
         delta_theta = (delta_right_distance - delta_left_distance) / wheel_distance
 
-        x -= delta_distance * math.cos(math.rad(theta))
-        y -= delta_distance * math.sin(math.rad(theta))
+        x -= delta_distance * math.cos(math.radians(theta))
+        y -= delta_distance * math.sin(math.radians(theta))
         theta += math.degrees(delta_theta) 
         theta = theta % 360
 
