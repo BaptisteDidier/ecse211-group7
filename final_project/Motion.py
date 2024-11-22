@@ -18,9 +18,10 @@ wheel_circumference = math.pi * wheel_diameter
 wheel_distance = 7.83
 
 # PID (adjust if needed)
-Kp = 0.04
+Kp = 0.2
 Ki = 0.0
-Kd = 0.01
+Kd = 0.0
+dT = 0.01
 
 # Sweeping
 sweeping_motor.set_limits(50, 360)
@@ -33,13 +34,14 @@ class PIDController:
         self.kd = kd
         self.last_error = 0
         self.integral = 0
+        self.dT = 0.05
 
-    def compute(self, target, current):
-        error = target - current
-        self.integral += error
-        derivative = error - self.last_error
+    def compute(self, left, right):
+        error = left - right
+        self.integral += error * self.dT
+        derivative = (error - self.last_error)/self.dT
         self.last_error = error
-        return self.kp * error + self.ki * self.integral + self.kd * derivative
+        return self.kp * error + self.integral * self.ki + self.kd * derivative
 
     def reset(self):
         self.last_error = 0
@@ -67,19 +69,19 @@ def move(speed=40, distance=50, direction='forward'):
         current_left = left_motor.get_encoder() - initial_left
         current_right = right_motor.get_encoder() - initial_right
         
-        correction = pidController.compute(initial_angle, gyro_sensor.get_abs_measure())
-       
+        correction = pidController.compute(current_left, current_right)
+
         if direction == 'forward':
-            left_motor.set_power(-speed - correction)
-            right_motor.set_power(-speed + correction)
+            left_motor.set_power(-speed + correction)
+            right_motor.set_power(-speed - correction)
         else:
             left_motor.set_power(speed - correction)
             right_motor.set_power(speed + correction)
         
-        if min(abs(current_left), abs(current_right)) >= target_ticks:
+        if abs(current_left) >= target_ticks and abs(current_right) >= target_ticks:
             stop()
             break
-        
+
         time.sleep(0.05)
 
     stop()
@@ -225,22 +227,3 @@ def explore():
         turn(50, 90, 'left')
         move(50, 5)
         turn(50, 90, 'right')
-        
-def is_water():
-    rgb = block_color_sensor.get_rgb()
-    print(rgb)
-        
-    if (0 < rgb[0] < 10) and (0 < rgb[1] < 5) and (0 < rgb[2] < 5):
-        return True
-        
-    return False
-        
-def check_water():
-    iteration = 0
-    while ultrasonic_sensor.get_cm() > 3:
-        move(40, 1)
-        iteration += 1.5
-        if is_water():
-            move(40, iteration, 'backward')
-            break
-    

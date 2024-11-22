@@ -15,6 +15,11 @@ def check_distance():
         Motion.turn(30,90, "left")
         robot_constant_move()
 
+def check_distance2():
+    while not (8 < ultrasonic_sensor.get_cm() < 30):
+        Motion.move(40, 2)
+    Motion.turn(30, -90, "left")
+    check_distance2()
 
 def main():
     initialize_components()
@@ -25,8 +30,32 @@ def main():
         check_distance()
     
     
-
-
+def is_water():
+    rgb = block_color_sensor.get_rgb()
+    print(rgb)
+        
+    if (0 < rgb[0] < 10) and (0 < rgb[1] < 5) and (0 < rgb[2] < 5):
+        return True
+        
+    return False
+        
+def check_water():
+    iteration = 0
+    while ultrasonic_sensor.get_cm() > 3:
+        Motion.move(40, 1, 'forward')
+        iteration += 1.5
+        if is_water():
+            Motion.move(40, iteration, 'backward')
+            break
+    
+def check_turn(direction='right'):
+    #iteration = 0
+    while ultrasonic_sensor.get_cm() > 3:
+        Motion.turn(40, 90, direction)
+        #iteration += 1.5
+        if is_water():
+            Motion.move(40, -90, 'left' if direction == 'right' else 'right')
+            break
 
 if __name__ == "__main__":
     main()

@@ -27,12 +27,12 @@ def main():
     
     try:
         #run_in_background(Motion.odometry())
-        #Motion.move(50, 20)
+        Motion.move(50, 80)
         #Motion.turn(50, 90)
         #Motion.move(50, 10)
-        #print(Motion.get_position())
+        print(Motion.get_position())
         #Grabbing.collect_block()
-        Motion.explore()
+        #Motion.explore()
         
     except KeyboardInterrupt:
         pass
