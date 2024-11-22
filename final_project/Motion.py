@@ -5,6 +5,7 @@ from Multithread import run_in_background
 
 # Motion
 angle_tolerance = 2
+min_turn_speed = 25
 left_motor.set_limits(100, 1440)
 right_motor.set_limits(100, 1440)
 left_motor.reset_encoder()
@@ -46,9 +47,8 @@ class PIDController:
         self.last_error = 0
         self.integral = 0
 
-
 # Public methods
-#pidController = PIDController()
+pidController = PIDController()
 
 def move(speed=50, distance=10, direction='forward'):
     """
@@ -59,29 +59,29 @@ def move(speed=50, distance=10, direction='forward'):
     target_ticks = (distance * 360) / wheel_circumference
     initial_left = left_motor.get_encoder()
     initial_right = right_motor.get_encoder()
+    initial_angle = gyro_sensor.get_abs_measure()
+    pidController.reset()
     
     sweeping = run_in_background(sweep)
     
     while sweeping.is_alive():
         current_left = left_motor.get_encoder() - initial_left
         current_right = right_motor.get_encoder() - initial_right
-
-        if current_left != 0 and current_right != 0:
-            left_factor, right_factor = (1, current_left / current_right) if current_left <= current_right else (current_right / current_left, 1)
-        else:
-            left_factor, right_factor = 1, 1
+        
+        correction = pidController.compute(initial_angle, gyro_sensor.get_abs_measure())
        
         if direction == 'forward':
-            left_motor.set_power(-speed*left_factor)
-            right_motor.set_power(-speed*right_factor)
+            left_motor.set_power(-speed + correction)
+            right_motor.set_power(-speed - correction)
         else:
-            left_motor.set_power(speed*left_factor)
-            right_motor.set_power(speed*right_factor)
+            left_motor.set_power(speed - correction)
+            right_motor.set_power(speed + correction)
         
         if min(abs(current_left), abs(current_right)) >= target_ticks:
+            stop()
             break
         
-        time.sleep(0.1)
+        time.sleep(0.05)
 
     stop()
 
@@ -91,33 +91,26 @@ def turn(speed=50, angle=90, direction='right'):
     """
     if direction not in ['right', 'left']: 
         raise ValueError("Direction must be 'right' or 'left'")
-    target_ticks = (angle * wheel_distance) / wheel_diameter
-    initial_left = left_motor.get_encoder()
-    initial_right = right_motor.get_encoder()
+    initial_angle = gyro_sensor.get_abs_measure()
     sweeping = run_in_background(sweep)
 
     while sweeping.is_alive():
-        current_left = left_motor.get_encoder() - initial_left
-        current_right = right_motor.get_encoder() - initial_right
+        current_angle = gyro_sensor.get_abs_measure() - initial_angle
         
-        if current_left != 0 and current_right != 0:
-            left_factor, right_factor = (1, abs(current_left / current_right)) if abs(current_left) <= abs(current_right) else (abs(current_right / current_left), 1)
-        else:
-            left_factor, right_factor = 1, 1
+        modular_speed = max(min_turn_speed, speed*((angle-current_angle)/angle)) # to slow down at the end of a turn
             
         if direction == 'right':
-            left_motor.set_power(-speed*left_factor)
-            right_motor.set_power(speed*right_factor)
+            left_motor.set_power(-modular_speed)
+            right_motor.set_power(modular_speed)
         else:
-            left_motor.set_power(speed*left_factor)
-            right_motor.set_power(-speed*right_factor)
+            left_motor.set_power(modular_speed)
+            right_motor.set_power(-modular_speed)
         
-        if min(abs(current_left), abs(current_right)) >= target_ticks:
+        if abs(angle - current_angle) <= angle_tolerance:
+            stop()
             break
  
-        time.sleep(0.1)
-
-    stop()
+        time.sleep(0.05)
 
 def stop():
     """
