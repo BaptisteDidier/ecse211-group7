@@ -1,10 +1,8 @@
-from Resources import left_motor, right_motor, gyro_sensor, sweeping_motor, scanning_color_sensor
+from Resources import left_motor, right_motor, gyro_sensor, sweeping_motor, scanning_color_sensor, block_color_sensor, ultrasonic_sensor
 import time
 import math
-from Multithread import run_in_background
 
 # Motion
-angle_tolerance = 2
 min_turn_speed = 15
 left_motor.set_limits(100, 1440)
 right_motor.set_limits(100, 1440)
@@ -50,10 +48,11 @@ class PIDController:
 # Public methods
 pidController = PIDController()
 
-def move(speed=50, distance=10, direction='forward'):
+def move(speed=40, distance=50, direction='forward'):
     """
     Moves for a given speed, distance and direction
     """
+    global water
     if direction not in ['forward', 'backward']: 
         raise ValueError("Direction must be 'forward' or 'backward'")
     target_ticks = (distance * 360) / wheel_circumference
@@ -62,9 +61,9 @@ def move(speed=50, distance=10, direction='forward'):
     initial_angle = gyro_sensor.get_abs_measure()
     pidController.reset()
     
-    sweeping = run_in_background(sweep)
+    #sweeping = run_in_background(sweep)
     
-    while sweeping.is_alive():
+    while True:
         current_left = left_motor.get_encoder() - initial_left
         current_right = right_motor.get_encoder() - initial_right
         
@@ -85,16 +84,16 @@ def move(speed=50, distance=10, direction='forward'):
 
     stop()
 
-def turn(speed=50, angle=90, direction='right'):
+def turn(speed=40, angle=90, direction='right'):
     """
     Turns to a given angle, at a given speed and direction
     """
     if direction not in ['right', 'left']: 
         raise ValueError("Direction must be 'right' or 'left'")
     initial_angle = gyro_sensor.get_abs_measure()
-    sweeping = run_in_background(sweep)
+    #sweeping = run_in_background(sweep)
 
-    while sweeping.is_alive():
+    while True:
         current_angle = gyro_sensor.get_abs_measure() - initial_angle
         
         modular_speed = max(min_turn_speed, speed*((angle-current_angle)/angle)) # to slow down at the end of a turn
@@ -222,3 +221,22 @@ def explore():
         turn(50, 90, 'left')
         move(50, 5)
         turn(50, 90, 'right')
+        
+def is_water():
+    rgb = block_color_sensor.get_rgb()
+    print(rgb)
+        
+    if (0 < rgb[0] < 10) and (0 < rgb[1] < 5) and (0 < rgb[2] < 5):
+        return True
+        
+    return False
+        
+def check_water():
+    iteration = 0
+    while ultrasonic_sensor.get_cm() > 3:
+        move(40, 1)
+        iteration += 1.5
+        if is_water():
+            move(40, iteration, 'backward')
+            break
+    
