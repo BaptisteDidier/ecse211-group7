@@ -1,7 +1,7 @@
 from Resources import left_motor, right_motor, gyro_sensor, sweeping_motor, scanning_color_sensor
 import time
 import math
-from main import run_in_background
+from Multithread import run_in_background
 
 # Motion
 angle_tolerance = 2
@@ -207,7 +207,6 @@ def sweep():
                 sweeping_motor.set_position_relative(-angle)
                 return angle
         
-
 def get_normalized_value():
     """
     Detects the normalized color of the ground
@@ -220,4 +219,13 @@ def get_normalized_value():
     total = sum(rgb)  
     return [round(255 * c / total, 0) for c in rgb]
 
-
+def explore():
+    while True:
+        move(50, 100)
+        turn(50, 90, 'right')
+        move(50, 5)
+        turn(50, 90, 'right')
+        move(50, 100)
+        turn(50, 90, 'left')
+        move(50, 5)
+        turn(50, 90, 'right')

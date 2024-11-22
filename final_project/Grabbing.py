@@ -1,6 +1,7 @@
 from Resources import gate_motor, block_color_sensor
 from Motion import move
 from CostMap import *
+#from Multithread import run_in_background
 
 # Global variables
 motor_power = 100

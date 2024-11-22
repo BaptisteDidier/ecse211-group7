@@ -1,17 +1,11 @@
 from Resources import *
-from threading import Thread
 import Motion
 import Grabbing
+from Multithread import run_in_background
 
 initialize_components()
 
-# Public methods
-def run_in_background(action):
-    """
-    Runs the given function in the background of the main thread
-    """
-    Thread(target=action, daemon=True).start()
-    
+# Public methods   
 def go_to_block():
     temp_list = []
     run_in_background(Motion.turn(30, 90))
@@ -33,11 +27,12 @@ def main():
     
     try:
         #run_in_background(Motion.odometry())
-        Motion.move(50, 20)
-        Motion.turn(50, 90)
-        Motion.move(50, 10)
+        #Motion.move(50, 20)
+        #Motion.turn(50, 90)
+        #Motion.move(50, 10)
         #print(Motion.get_position())
         #Grabbing.collect_block()
+        Motion.explore()
         
     except KeyboardInterrupt:
         pass

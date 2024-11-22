@@ -1,5 +1,5 @@
 from Resources import ultrasonic_sensor
-from main import run_in_background
+from Multithread import run_in_background
 import Motion
 import math
 
