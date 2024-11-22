@@ -5,7 +5,7 @@ from Multithread import run_in_background
 
 # Motion
 angle_tolerance = 2
-min_turn_speed = 25
+min_turn_speed = 15
 left_motor.set_limits(100, 1440)
 right_motor.set_limits(100, 1440)
 left_motor.reset_encoder()
