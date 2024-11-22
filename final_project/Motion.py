@@ -71,8 +71,8 @@ def move(speed=50, distance=10, direction='forward'):
         correction = pidController.compute(initial_angle, gyro_sensor.get_abs_measure())
        
         if direction == 'forward':
-            left_motor.set_power(-speed + correction)
-            right_motor.set_power(-speed - correction)
+            left_motor.set_power(-speed - correction)
+            right_motor.set_power(-speed + correction)
         else:
             left_motor.set_power(speed - correction)
             right_motor.set_power(speed + correction)
@@ -106,7 +106,7 @@ def turn(speed=50, angle=90, direction='right'):
             left_motor.set_power(modular_speed)
             right_motor.set_power(-modular_speed)
         
-        if abs(angle - current_angle) <= angle_tolerance:
+        if abs(angle - current_angle) == 0:
             stop()
             break
  
