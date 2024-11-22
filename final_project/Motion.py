@@ -101,13 +101,13 @@ def turn(speed=40, angle=90, direction='right'):
         if direction == 'right':
             left_motor.set_power(-modular_speed)
             right_motor.set_power(modular_speed)
-            if angle > current_angle:
+            if angle >= current_angle:
                 stop()
                 break
         else:
             left_motor.set_power(modular_speed)
             right_motor.set_power(-modular_speed)
-            if angle < current_angle:
+            if angle <= current_angle:
                 stop()
                 break
         
