@@ -18,7 +18,7 @@ wheel_circumference = math.pi * wheel_diameter
 wheel_distance = 7.83
 
 # PID (adjust if needed)
-Kp = 0.2
+Kp = 0.5
 Ki = 0.0
 Kd = 0.0
 dT = 0.05
@@ -53,7 +53,6 @@ def move(speed=40, distance=50, direction='forward'):
     """
     Moves for a given speed, distance and direction
     """
-    global water
     if direction not in ['forward', 'backward']: 
         raise ValueError("Direction must be 'forward' or 'backward'")
     target_ticks = (distance * 360) / wheel_circumference
@@ -72,13 +71,13 @@ def move(speed=40, distance=50, direction='forward'):
         correction = pidController.compute(initial_angle, current_angle)
 
         if direction == 'forward':
-            left_motor.set_power(-speed + correction)
-            right_motor.set_power(-speed - correction)
+            left_motor.set_power(-speed - correction)
+            right_motor.set_power(-speed + correction)
         else:
             left_motor.set_power(speed - correction)
             right_motor.set_power(speed + correction)
-        
-        if abs(current_left) >= target_ticks and abs(current_right) >= target_ticks:
+            
+        if abs(current_left) >= target_ticks or abs(current_right) >= target_ticks:
             stop()
             break
 
@@ -103,13 +102,13 @@ def turn(speed=40, angle=90, direction='right'):
         if direction == 'right':
             left_motor.set_power(-modular_speed)
             right_motor.set_power(modular_speed)
-            if angle >= current_angle:
+            if angle <= current_angle:
                 stop()
                 break
         else:
             left_motor.set_power(modular_speed)
             right_motor.set_power(-modular_speed)
-            if angle <= current_angle:
+            if angle >= current_angle:
                 stop()
                 break
  
