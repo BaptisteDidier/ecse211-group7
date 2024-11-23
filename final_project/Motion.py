@@ -21,7 +21,7 @@ wheel_distance = 7.83
 Kp = 0.2
 Ki = 0.0
 Kd = 0.0
-dT = 0.01
+dT = 0.05
 
 # Sweeping
 sweeping_motor.set_limits(50, 360)
@@ -34,12 +34,11 @@ class PIDController:
         self.kd = kd
         self.last_error = 0
         self.integral = 0
-        self.dT = 0.05
 
-    def compute(self, left, right):
-        error = left - right
-        self.integral += error * self.dT
-        derivative = (error - self.last_error)/self.dT
+    def compute(self, target, current):
+        error = target - current
+        self.integral += error * dT
+        derivative = (error - self.last_error) / dT
         self.last_error = error
         return self.kp * error + self.integral * self.ki + self.kd * derivative
 
@@ -69,7 +68,8 @@ def move(speed=40, distance=50, direction='forward'):
         current_left = left_motor.get_encoder() - initial_left
         current_right = right_motor.get_encoder() - initial_right
         
-        correction = pidController.compute(current_left, current_right)
+        current_angle = gyro_sensor.get_abs_measure()
+        correction = pidController.compute(initial_angle, current_angle)
 
         if direction == 'forward':
             left_motor.set_power(-speed + correction)
@@ -82,7 +82,7 @@ def move(speed=40, distance=50, direction='forward'):
             stop()
             break
 
-        time.sleep(0.05)
+        time.sleep(dT)
 
     stop()
 
@@ -112,10 +112,8 @@ def turn(speed=40, angle=90, direction='right'):
             if angle <= current_angle:
                 stop()
                 break
-        
-    
  
-        time.sleep(0.05)
+        time.sleep(dT)
 
 def stop():
     """
