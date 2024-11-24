@@ -2,7 +2,7 @@ def is_water_color(rgb):
     """
     @Checks if the RGB value corresponds to water.
     """
-    if (40 < rgb[0] < 70) and (40 < rgb[1] < 80) and (125 < rgb[2] < 170):  # Typical water color range
+    if (40 < rgb[0] < 70) and (40 < rgb[1] < 80) and (125 < rgb[2] < 170):  # Typical water color range apparently?
         return True
     return False
 
