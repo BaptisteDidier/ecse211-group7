@@ -18,7 +18,7 @@ wheel_circumference = math.pi * wheel_diameter
 wheel_distance = 7.83
 
 # PID (adjust if needed)
-Kp = 0.7
+Kp = 0.5
 Ki = 0.0
 Kd = 0.0
 dT = 0.05
@@ -53,7 +53,6 @@ def move(speed=40, distance=50, direction='forward'):
     """
     Moves for a given speed, distance and direction
     """
-    global water
     if direction not in ['forward', 'backward']: 
         raise ValueError("Direction must be 'forward' or 'backward'")
     target_ticks = (distance * 360) / wheel_circumference
