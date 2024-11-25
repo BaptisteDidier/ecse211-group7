@@ -1,6 +1,6 @@
 from Resources import *
 import Motion
-from Grabbing import open_gate, close_gate, is_valid_block, collect_block
+from Grabbing import open_gate, close_gate, is_valid_block, collect_block, eject
 from Multithread import run_in_background
 from time import sleep
 
@@ -56,6 +56,17 @@ def is_water():
         return True
         
     return False
+
+def is_trashcan():
+     rgb = ground_color_sensor.get_rgb()
+    while (rgb[0] == 0) and (rgb[1] == 0) and (rgb[2] == 0) or (rgb[0] == None) or (rgb[1] == None) or (rgb[2] == None):
+        rgb = block_color_sensor.get_rgb()
+    print(rgb)
+        
+    if (250 <= rgb[0] <=260 ) and (190 <= rgb[1] <= 210) and (40 <= rgb[2] <= 50):
+        print("trashcan is found")
+        return True
+        
         
 def check_water():
     iteration = 0
@@ -93,7 +104,12 @@ def check_water():
                 print("cube invalid")
                 Motion.move(40, iteration, 'backward')
                 print("bachward done")
-                break                
+                break       
+
+        if is_trashcan():
+            Grabbing.eject()
+            Motion.stop()
+            break   
     
 def check_turn(direction='right'):
     #iteration = 0
