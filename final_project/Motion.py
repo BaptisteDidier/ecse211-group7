@@ -1,4 +1,4 @@
-from Resources import left_motor, right_motor, gyro_sensor, sweeping_motor, scanning_color_sensor, block_color_sensor, ultrasonic_sensor
+from Resources import left_motor, right_motor, gyro_sensor, block_color_sensor, ultrasonic_sensor
 import time
 import math
 
@@ -18,14 +18,14 @@ wheel_circumference = math.pi * wheel_diameter
 wheel_distance = 7.83
 
 # PID (adjust if needed)
-Kp = 0.2
+Kp = 0.7
 Ki = 0.0
 Kd = 0.0
-dT = 0.01
+dT = 0.05
 
 # Sweeping
-sweeping_motor.set_limits(50, 360)
-sweeping_motor.reset_encoder()
+#sweeping_motor.set_limits(50, 360)
+#sweeping_motor.reset_encoder()
 
 class PIDController:
     def __init__(self, kp=Kp, ki=Ki, kd=Kd):
@@ -34,12 +34,11 @@ class PIDController:
         self.kd = kd
         self.last_error = 0
         self.integral = 0
-        self.dT = 0.05
 
-    def compute(self, left, right):
-        error = left - right
-        self.integral += error * self.dT
-        derivative = (error - self.last_error)/self.dT
+    def compute(self, target, current):
+        error = target - current
+        self.integral += error * dT
+        derivative = (error - self.last_error) / dT
         self.last_error = error
         return self.kp * error + self.integral * self.ki + self.kd * derivative
 
@@ -69,20 +68,22 @@ def move(speed=40, distance=50, direction='forward'):
         current_left = left_motor.get_encoder() - initial_left
         current_right = right_motor.get_encoder() - initial_right
         
-        correction = pidController.compute(current_left, current_right)
+        current_angle = gyro_sensor.get_abs_measure()
+        correction = pidController.compute(initial_angle, current_angle)
+        #print(current_left, current_right, current_angle, correction)
 
         if direction == 'forward':
-            left_motor.set_power(-speed + correction)
-            right_motor.set_power(-speed - correction)
+            left_motor.set_power(-speed - correction)
+            right_motor.set_power(-speed + correction)
         else:
             left_motor.set_power(speed - correction)
             right_motor.set_power(speed + correction)
         
-        if abs(current_left) >= target_ticks and abs(current_right) >= target_ticks:
+        if abs(current_left) >= target_ticks or abs(current_right) >= target_ticks:
             stop()
             break
 
-        time.sleep(0.05)
+        time.sleep(dT)
 
     stop()
 
@@ -97,25 +98,23 @@ def turn(speed=40, angle=90, direction='right'):
 
     while True:
         current_angle = gyro_sensor.get_abs_measure() - initial_angle
-        
+        print(current_angle)
         modular_speed = max(min_turn_speed, speed*((angle-current_angle)/angle)) # to slow down at the end of a turn
-            
+        
         if direction == 'right':
             left_motor.set_power(-modular_speed)
             right_motor.set_power(modular_speed)
-            if angle >= current_angle:
+            if angle <= current_angle:
                 stop()
                 break
         else:
             left_motor.set_power(modular_speed)
             right_motor.set_power(-modular_speed)
-            if angle <= current_angle:
+            if angle >= current_angle:
                 stop()
                 break
-        
-    
  
-        time.sleep(0.05)
+        time.sleep(dT)
 
 def stop():
     """

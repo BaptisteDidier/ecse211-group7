@@ -1,6 +1,8 @@
 from Resources import *
 import Motion
+from Grabbing import open_gate, close_gate, is_valid_block, collect_block
 from Multithread import run_in_background
+from time import sleep
 
 
 def robot_constant_move():
@@ -28,25 +30,70 @@ def main():
     robot_constant_move()
     while True:
         check_distance()
+
+def get_normalized_rgb(number=5):
+    """
+    Returns the normalized values of the fixed color sensor
+    """
+    array = list()
+    for _ in range(number):
+        rgb = block_color_sensor.get_rgb()
+        if any(value is None or value == 0 for value in rgb):
+            print("Invalid reading")
+            return [0, 0, 0]
+        array.append(rgb)
     
+    total = [sum(x) for x in zip(*array)]
+    return [round(255 * c / sum(total), 0) for c in total]
     
 def is_water():
-    rgb = block_color_sensor.get_rgb()
+    rgb = ground_color_sensor.get_rgb()
+    while (rgb[0] == 0) and (rgb[1] == 0) and (rgb[2] == 0) or (rgb[0] == None) or (rgb[1] == None) or (rgb[2] == None):
+        rgb = block_color_sensor.get_rgb()
     print(rgb)
         
-    if (0 < rgb[0] < 10) and (0 < rgb[1] < 5) and (0 < rgb[2] < 5):
+    if (20 <= rgb[0] <= 35) and (25 <= rgb[1] <= 45) and (40 <= rgb[2] <= 85):
         return True
         
     return False
         
 def check_water():
     iteration = 0
-    while ultrasonic_sensor.get_cm() > 3:
-        Motion.move(40, 1, 'forward')
-        iteration += 1.5
+    #print(ultrasonic_sensor.get_cm())
+    while True:
+        
+        #print(ultrasonic_sensor.get_cm())
+        
         if is_water():
+            print("is water !!")
             Motion.move(40, iteration, 'backward')
             break
+        
+        Motion.move(40, 0.5, 'forward')
+        iteration += 0.8
+        distance = ultrasonic_sensor.get_cm()
+        
+        if 0 < distance < 5:
+            print("is wall !!")
+            Motion.move(40, 95, 'backward')
+            break
+        
+        print("is not water")
+        array = block_color_sensor.get_rgb()
+        while any(value is None or value == 0 for value in array):
+            print("incorrect reading")
+            array = block_color_sensor.get_rgb()
+        
+        if (array[0] + array[1] + array[2]) > 65:
+            print("cube under")
+            if is_valid_block():
+                print("cube valid")
+                collect_block()
+            else:
+                print("cube invalid")
+                Motion.move(40, iteration, 'backward')
+                print("bachward done")
+                break                
     
 def check_turn(direction='right'):
     #iteration = 0
@@ -58,4 +105,5 @@ def check_turn(direction='right'):
             break
 
 if __name__ == "__main__":
-    main()
+    print("1")
+    check_water()

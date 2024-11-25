@@ -15,13 +15,13 @@ def open_gate():
     """
     Open the gate
     """
-    gate_motor.set_position_relative(90)
+    gate_motor.set_position_relative(60)
         
 def close_gate():
     """
     Close the gate
     """
-    gate_motor.set_position_relative(-90)
+    gate_motor.set_position_relative(-60)
     
 def get_normalized_rgb(number=5):
     """
@@ -45,11 +45,12 @@ def is_valid_block():
     array = get_normalized_rgb()
     while any(value is None or value == 0 for value in array):
         array = get_normalized_rgb()
-    
-    if (190 < array[0] < 205) and (30 < array[1] < 50) and (15 < array[2] < 20): # Orange
+        print("1")
+    print(array)
+    if (180 <= array[0] <= 205) and (30 <= array[1] <= 60) and (15 <= array[2] <= 25): # Orange
         return True
     
-    if (155 < array[0] < 175) and (70 < array[1] < 95) and (0 < array[2] < 10): # Yellow
+    if (135 <= array[0] <= 175) and (70 <= array[1] <= 110) and (0 < array[2] <= 20): # Yellow
         return True
     
     return False
@@ -60,10 +61,11 @@ def collect_block():
     """  
     if is_valid_block():
         #collected_cubes += 1
+        move(40, 3, 'backward')
         open_gate()
-        move(40, 11, 'forward')
+        move(40, 10, 'forward')
         close_gate()
-        move(40, 11, 'backward')
+        move(40, 7, 'backward')
 
     else:
         move(40, 5, 'backward')
@@ -76,3 +78,6 @@ def eject():
     move(40, 33, 'backward')
     close_gate()
     #collected_cubes = 0
+    
+def get_color():
+    return block_color_sensor.get_rgb()

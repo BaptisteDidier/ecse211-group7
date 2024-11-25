@@ -6,12 +6,12 @@ from utils.brick import *
 left_motor = Motor("A")
 right_motor = Motor("B")
 gate_motor = Motor("C")
-sweeping_motor = Motor("D")
+#sweeping_motor = Motor("D")
 
 # Sensors
 ultrasonic_sensor = EV3UltrasonicSensor(1)
 block_color_sensor = EV3ColorSensor(3)
-scanning_color_sensor = EV3ColorSensor(2)
+ground_color_sensor = EV3ColorSensor(2)
 gyro_sensor = EV3GyroSensor(4)
 gyro_sensor.set_mode("abs")
 gyro_sensor.reset_measure()
