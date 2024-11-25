@@ -49,7 +49,7 @@ def get_normalized_rgb(number=5):
 def is_water():
     rgb = ground_color_sensor.get_rgb()
     while (rgb[0] == 0) and (rgb[1] == 0) and (rgb[2] == 0) or (rgb[0] == None) or (rgb[1] == None) or (rgb[2] == None):
-        rgb = block_color_sensor.get_rgb()
+        rgb = ground_color_sensor.get_rgb()
     print(rgb)
         
     if (20 <= rgb[0] <= 35) and (25 <= rgb[1] <= 45) and (40 <= rgb[2] <= 85):
@@ -58,29 +58,31 @@ def is_water():
     return False
 
 def is_trashcan():
-     rgb = ground_color_sensor.get_rgb()
+    rgb = ground_color_sensor.get_rgb()
     while (rgb[0] == 0) and (rgb[1] == 0) and (rgb[2] == 0) or (rgb[0] == None) or (rgb[1] == None) or (rgb[2] == None):
-        rgb = block_color_sensor.get_rgb()
+        rgb = ground_color_sensor.get_rgb()
     print(rgb)
         
-    if (250 <= rgb[0] <=260 ) and (190 <= rgb[1] <= 210) and (40 <= rgb[2] <= 50):
-        print("trashcan is found")
-        return True
+    if (190 <= rgb[0] <= 210) and (150 <= rgb[1] <= 170) and (25 <= rgb[2] <= 45):
+       print("trashcan detected")
+       return True
         
+    return False
+
         
 def check_water():
     iteration = 0
     #print(ultrasonic_sensor.get_cm())
     while True:
         
-        #print(ultrasonic_sensor.get_cm())
+        print(ultrasonic_sensor.get_cm())
         
         if is_water():
             print("is water !!")
             Motion.move(40, iteration, 'backward')
             break
         
-        Motion.move(40, 0.5, 'forward')
+        Motion.move(40, 10, 'forward')
         iteration += 0.8
         distance = ultrasonic_sensor.get_cm()
         
@@ -103,14 +105,69 @@ def check_water():
             else:
                 print("cube invalid")
                 Motion.move(40, iteration, 'backward')
-                print("bachward done")
-                break       
-
+                print("backward done")
+                break
+            
         if is_trashcan():
-            Grabbing.eject()
+            print("it should be ejecting now")
             Motion.stop()
-            break   
+            Motion.move(40, 10, 'forward')
+            
+            eject()
+            
+            print("finished ejecting")
+            break
+        
+        #run_in_background(zig_zag_color_sensor)
+        
+        time.sleep(0.5)
+        Motion.turn(20, 20,'right')
+        check_color_sensor()
+        
+        time.sleep(0.5)
+        Motion.turn(20, -40,'left')
+        check_color_sensor()
+        
+        time.sleep(0.5)
+        Motion.turn(20, 20,'right')
+
+
+def zig_zag_color_sensor():
+    print("checking the color in the background")
+    array = block_color_sensor.get_rgb()
+    print(array)
+    while any(value is None or value == 0 for value in array):
+        print("incorrect reading")
+        array = block_color_sensor.get_rgb()
     
+    if (array[0] + array[1] + array[2]) > 65:
+        print("cube under")
+        if is_valid_block():
+            print("cube valid")
+            collect_block()
+        else:
+            print("cube invalid")
+            Motion.move(40, iteration, 'backward')
+            print("backward done")
+
+def check_color_sensor():
+    print("checking the color in the background")
+    array = block_color_sensor.get_rgb()
+    while any(value is None or value == 0 for value in array):
+        print("incorrect reading")
+        array = block_color_sensor.get_rgb()
+    
+        if (array[0] + array[1] + array[2]) > 65:
+            print("cube under")
+            if is_valid_block():
+                print("cube valid")
+                collect_block()
+            else:
+                print("cube invalid")
+                Motion.move(40, iteration, 'backward')
+                print("backward done")
+            break
+
 def check_turn(direction='right'):
     #iteration = 0
     while ultrasonic_sensor.get_cm() > 3:
