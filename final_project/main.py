@@ -25,7 +25,7 @@ def go_to_block():
     
 # Main loop
 def main():
-    
+    onEdge = 0
     try:
         #run_in_background(Motion.odometry())
         #Motion.move(40, 50)
@@ -37,8 +37,10 @@ def main():
         
         check_water()   
         Motion.turn(40, 90)
+        onEdge = 1
         Motion.move(40, 14)
         Motion.turn(40, -90, 'left')
+        onEdge = 0
         
         check_water()   
         Motion.turn(40, 90)
