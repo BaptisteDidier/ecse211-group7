@@ -6,7 +6,7 @@ from utils.brick import *
 left_motor = Motor("A")
 right_motor = Motor("B")
 gate_motor = Motor("C")
-#sweeping_motor = Motor("D")
+sweeping_motor = Motor("D")
 
 # Sensors
 ultrasonic_sensor = EV3UltrasonicSensor(1)
