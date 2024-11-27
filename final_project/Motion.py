@@ -26,7 +26,7 @@ Kd = 0.0
 dT = 0.05
 
 # Sweeping
-sweeping_motor.set_limits(50, 360)
+sweeping_motor.set_limits(30, 280)
 sweeping_motor.reset_encoder()
 
 class PIDController:
@@ -184,11 +184,12 @@ def get_euclidean_distance(current_x, current_y, target_x, target_y):
     """
     return ((target_x - current_x) ** 2 + (target_y - current_y) ** 2) ** 0.5
 
-def sweep(angle1, angle2, delay=0.5):
+def sweep(angle1, angle2, delay=0.05):
     """
     Make the sweeping motion
     """
-    while not stop_move.is_set():
+    print("1")
+    while True:
         sweeping_motor.set_position_relative(angle1 - sweeping_motor.get_encoder())
         while abs(sweeping_motor.get_encoder() - angle1) > 2:  
             time.sleep(0.01)
@@ -202,6 +203,7 @@ def sweep(angle1, angle2, delay=0.5):
         time.sleep(delay)
         
     sweeping_motor.set_power(0)
+    sweeping_motor.set_position_relative(-sweeping_motor.get_encoder())
         
 def get_normalized_value():
     """
@@ -218,7 +220,7 @@ def get_normalized_value():
 def explore():
     print("not implemented")
 
-def thread_move(speed=40, distance=50, direction='forward'):
+def thread_move(speed=40, distance=70, direction='forward'):
     stop_move.clear()
     move_thread = threading.Thread(target=move, args=(speed, distance, direction))
     move_thread.start()
@@ -230,7 +232,7 @@ def thread_turn(speed=40, angle=90, direction='right'):
     turn_thread.start()
     return turn_thread
 
-def thread_sweep(angle1=-45, angle2=45):
+def thread_sweep(angle1=0, angle2=-90):
     stop_move.clear()
     sweep_thread = threading.Thread(target=sweep, args=(angle1, angle2))
     sweep_thread.start()
@@ -244,14 +246,25 @@ def detect_cubes():
     sweep_thread = thread_sweep()
     
     while True:
-        rgb = get_normalized_value()
-        if ((180 <= rgb[0] <= 205) and (30 <= rgb[1] <= 60) and (15 <= rgb[2] <= 25)) or \
-           ((135 <= rgb[0] <= 175) and (70 <= rgb[1] <= 110) and (0 < rgb[2] <= 20)):  # Orange or Yellow
+        intensity = block_color_sensor.get_rgb()
+        if sum(intensity) > 65:
+            angle = sweeping_motor.get_encoder()
+            rgb = get_normalized_value()
+            print(rgb)
+            print("1")
             stop_move.set()
-            move_thread.join()
-            sweep_thread.join()
-            break
+            #sweep_thread.join()
+            print("2")
+                
+            if ((160 <= rgb[0] <= 205) and (30 <= rgb[1] <= 75) and (15 <= rgb[2] <= 35)) or \
+               ((135 <= rgb[0] <= 175) and (70 <= rgb[1] <= 110) and (0 < rgb[2] <= 20)):# Orange or Yellow
+                print("valid")
+                return angle
+    
+            else:
+                print("invalid")
+                return None
             
-        time.sleep(0.1)
-
-    return sweeping_motor.get_encoder()
+        time.sleep(0.01)
+    sweeping_motor.set_position(-angle)    
+    
