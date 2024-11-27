@@ -237,7 +237,25 @@ def thread_sweep(angle1=0, angle2=-90):
     sweep_thread = threading.Thread(target=sweep, args=(angle1, angle2))
     sweep_thread.start()
     return sweep_thread
+#def sweep_for_cube(self):
+       # to be done 
 
+   # def reorient_and_pickup_cube(self):
+       
+       # detected_angle = self.sweep_for_cube()  
+        #if detected_angle is not None:
+          #  print(f"Cube detected at angle {detected_angle} degrees")
+            
+           # if detected_angle > 0:
+             #   self.turn(40, detected_angle, "right")
+            #else:
+              #  self.turn(40, -detected_angle, "left")
+
+            
+           # print("Moving to pick up the cube...")
+          #  self.collect_block()
+       # else:
+           # print("No cube detected in sweep.")
 def detect_cubes():
     """
     Moves the robot and make the sweep until a valid block is seen and return its position relative to the robot
@@ -259,12 +277,13 @@ def detect_cubes():
             if ((160 <= rgb[0] <= 205) and (30 <= rgb[1] <= 75) and (15 <= rgb[2] <= 35)) or \
                ((135 <= rgb[0] <= 175) and (70 <= rgb[1] <= 110) and (0 < rgb[2] <= 20)):# Orange or Yellow
                 print("valid")
+                sweeping_motor.set_position(-angle) 
                 return angle
     
             else:
                 print("invalid")
+                sweeping_motor.set_position(-angle) 
                 return None
             
-        time.sleep(0.01)
-    sweeping_motor.set_position(-angle)    
+        time.sleep(0.01)   
     
