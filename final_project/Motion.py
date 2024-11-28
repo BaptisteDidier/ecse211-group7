@@ -2,7 +2,7 @@ from Resources import left_motor, right_motor, gyro_sensor, block_color_sensor, 
 import time
 import math
 import threading
-
+from Grabbing import collect_block, collect
 # Motion
 min_turn_speed = 15
 left_motor.set_limits(100, 1440)
@@ -92,14 +92,17 @@ def turn(speed=40, angle=90, direction='right'):
     """
     Turns to a given angle, at a given speed and direction
     """
+    
     if direction not in ['right', 'left']: 
         raise ValueError("Direction must be 'right' or 'left'")
     initial_angle = gyro_sensor.get_abs_measure()
+    
     #sweeping = run_in_background(sweep)
 
     while not stop_move.is_set():
+        
         current_angle = gyro_sensor.get_abs_measure() - initial_angle
-        print(current_angle)
+        #print(current_angle)
         modular_speed = max(min_turn_speed, speed*((angle-current_angle)/angle)) # to slow down at the end of a turn
         
         if direction == 'right':
@@ -188,22 +191,40 @@ def sweep(angle1, angle2, delay=0.05):
     """
     Make the sweeping motion
     """
-    print("1")
-    while True:
-        sweeping_motor.set_position_relative(angle1 - sweeping_motor.get_encoder())
-        while abs(sweeping_motor.get_encoder() - angle1) > 2:  
+    print("starts sweeping")
+    while not stop_move.is_set():
+        sweeping_motor.set_position(angle1 - sweeping_motor.get_encoder())
+        while abs(sweeping_motor.get_encoder() - angle1) > 2:
+            if stop_move.is_set():
+                break
             time.sleep(0.01)
+            
+        if stop_move.is_set():
+            print("stop move is set my lord")
+            break
         
         time.sleep(delay)
+        
 
-        sweeping_motor.set_position_relative(angle2 - sweeping_motor.get_encoder())
+        sweeping_motor.set_position(angle2 - sweeping_motor.get_encoder())
         while abs(sweeping_motor.get_encoder() - angle2) > 2:
+            if stop_move.is_set():
+                break
             time.sleep(0.01)
-
-        time.sleep(delay)
         
+        if stop_move.is_set():
+            break
+        
+        time.sleep(delay)
+
+    sweeping_motor.set_position(0)
+    print("position has been set to 0 in sweep")
+    """this time sleep is absolutely necessary"""
+    
+    time.sleep(1) 
     sweeping_motor.set_power(0)
-    sweeping_motor.set_position_relative(-sweeping_motor.get_encoder())
+    time.sleep(1)
+    
         
 def get_normalized_value():
     """
@@ -220,7 +241,7 @@ def get_normalized_value():
 def explore():
     print("not implemented")
 
-def thread_move(speed=40, distance=70, direction='forward'):
+def thread_move(speed=20, distance=70, direction='forward'):
     stop_move.clear()
     move_thread = threading.Thread(target=move, args=(speed, distance, direction))
     move_thread.start()
@@ -232,35 +253,17 @@ def thread_turn(speed=40, angle=90, direction='right'):
     turn_thread.start()
     return turn_thread
 
-def thread_sweep(angle1=0, angle2=-90):
+def thread_sweep(angle1=45, angle2=-45):
     stop_move.clear()
     sweep_thread = threading.Thread(target=sweep, args=(angle1, angle2))
     sweep_thread.start()
     return sweep_thread
-#def sweep_for_cube(self):
-       # to be done 
 
-   # def reorient_and_pickup_cube(self):
-       
-       # detected_angle = self.sweep_for_cube()  
-        #if detected_angle is not None:
-          #  print(f"Cube detected at angle {detected_angle} degrees")
-            
-           # if detected_angle > 0:
-             #   self.turn(40, detected_angle, "right")
-            #else:
-              #  self.turn(40, -detected_angle, "left")
-
-            
-           # print("Moving to pick up the cube...")
-          #  self.collect_block()
-       # else:
-           # print("No cube detected in sweep.")
 def detect_cubes():
     """
     Moves the robot and make the sweep until a valid block is seen and return its position relative to the robot
     """
-    move_thread = thread_move()
+    #move_thread = thread_move()
     sweep_thread = thread_sweep()
     
     while True:
@@ -269,21 +272,54 @@ def detect_cubes():
             angle = sweeping_motor.get_encoder()
             rgb = get_normalized_value()
             print(rgb)
-            print("1")
             stop_move.set()
+            reset_sweeping()
+            time.sleep(0.01)
+            
+
             #sweep_thread.join()
-            print("2")
+            
+            
                 
             if ((160 <= rgb[0] <= 205) and (30 <= rgb[1] <= 75) and (15 <= rgb[2] <= 35)) or \
-               ((135 <= rgb[0] <= 175) and (70 <= rgb[1] <= 110) and (0 < rgb[2] <= 20)):# Orange or Yellow
+               ((120 <= rgb[0] <= 175) and (70 <= rgb[1] <= 120) and (0 < rgb[2] <= 30)):# Orange or Yello
                 print("valid")
-                sweeping_motor.set_position(-angle) 
+                
+
                 return angle
     
             else:
                 print("invalid")
-                sweeping_motor.set_position(-angle) 
                 return None
             
-        time.sleep(0.01)   
+
+            
+        time.sleep(0.01)
+
+def reset_sweeping():
+    sweeping_motor.set_position(0)
+    sweeping_motor.set_power(0)
+
+def orient_and_pickup():
+    print("will start to pickup cubes")
+    detected_angle = detect_cubes()
+    stop_move.clear()
+    
+    if detected_angle is not None:
+        print("angle was detected")
+        print(detected_angle)
+        
+        
+        if detected_angle > 0:
+            turn(20, 10, "right")
+            print("turn right")
+        elif detected_angle < 0:
+            turn(20, -10, "left")
+            print("turn left")
+            
+        collect()
+    else:
+        print("no valid cube was detected")
+    
+            
     
