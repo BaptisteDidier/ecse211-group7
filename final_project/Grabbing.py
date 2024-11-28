@@ -55,17 +55,20 @@ def is_valid_block():
     
     return False
 
+def collect():
+    move(40, 3, 'backward')
+    open_gate()
+    move(40, 10, 'forward')
+    close_gate()
+    move(40, 7, 'backward')
+
 def collect_block():
     """
     Make the grabbing choice assuming that the robot is in the correct position
     """  
     if is_valid_block():
         #collected_cubes += 1
-        move(40, 3, 'backward')
-        open_gate()
-        move(40, 10, 'forward')
-        close_gate()
-        move(40, 7, 'backward')
+        collect()
 
     else:
         move(40, 5, 'backward')

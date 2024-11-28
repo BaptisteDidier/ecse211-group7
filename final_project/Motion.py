@@ -2,7 +2,8 @@ from Resources import left_motor, right_motor, gyro_sensor, block_color_sensor, 
 import time
 import math
 import threading
-from Grabbing import collect_block, collect
+from Grabbing import collect
+
 # Motion
 min_turn_speed = 15
 left_motor.set_limits(100, 1440)
@@ -267,6 +268,8 @@ def detect_cubes():
     sweep_thread = thread_sweep()
     
     while True:
+                
+        
         intensity = block_color_sensor.get_rgb()
         if sum(intensity) > 65:
             angle = sweeping_motor.get_encoder()
@@ -275,25 +278,17 @@ def detect_cubes():
             stop_move.set()
             reset_sweeping()
             time.sleep(0.01)
-            
-
             #sweep_thread.join()
-            
-            
                 
             if ((160 <= rgb[0] <= 205) and (30 <= rgb[1] <= 75) and (15 <= rgb[2] <= 35)) or \
                ((120 <= rgb[0] <= 175) and (70 <= rgb[1] <= 120) and (0 < rgb[2] <= 30)):# Orange or Yello
                 print("valid")
-                
-
                 return angle
     
             else:
                 print("invalid")
                 return None
-            
-
-            
+        
         time.sleep(0.01)
 
 def reset_sweeping():
@@ -308,8 +303,7 @@ def orient_and_pickup():
     if detected_angle is not None:
         print("angle was detected")
         print(detected_angle)
-        
-        
+              
         if detected_angle > 0:
             turn(20, 10, "right")
             print("turn right")
