@@ -27,6 +27,9 @@ sweeping_motor.set_limits(30, 280)
 sweeping_motor.reset_encoder()
 
 class PIDController:
+    """
+    Create a PID Controller for motion
+    """
     def __init__(self, kp=Kp, ki=Ki, kd=Kd):
         self.kp = kp
         self.ki = ki
@@ -215,16 +218,22 @@ def detect_cubes():
     """
     Moves the robot and make the sweep until a valid block is seen and return its position relative to the robot
     """
-    #move_thread = thread_move()
+    move_thread = thread_move()
     sweep_thread = thread_sweep()
     
     while True:
         rgb = ground_color_sensor.get_rgb()
         if (20 <= rgb[0] <= 35) and (25 <= rgb[1] <= 45) and (40 <= rgb[2] <= 85): # Water detected
+            stop_move.set()
+            move_thread.join()
+            sweep_thread.join()
             return None
 
         distance = ultrasonic_sensor.get_cm()
         if 0 < distance < 5: # Wall detected
+            stop_move.set()
+            move_thread.join()
+            sweep_thread.join()
             return None
         
         intensity = block_color_sensor.get_rgb()
@@ -233,9 +242,10 @@ def detect_cubes():
             rgb = get_normalized_value()
             print(rgb)
             stop_move.set()
+            move_thread.join()
+            sweep_thread.join()
             reset_sweep()
             time.sleep(0.01)
-            #sweep_thread.join()
                 
             if ((160 <= rgb[0] <= 205) and (30 <= rgb[1] <= 75) and (15 <= rgb[2] <= 35)) or \
                ((120 <= rgb[0] <= 175) and (70 <= rgb[1] <= 120) and (0 < rgb[2] <= 30)):# Orange or Yellow
