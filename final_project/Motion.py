@@ -345,3 +345,9 @@ def change_row(direction='right'):
         turn(30, -90, 'left')
         move(30, 13)
         turn(30, 90, 'right')
+        
+        
+def clear_line():
+    """
+    Clears a line for the robot
+    """
