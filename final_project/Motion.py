@@ -9,10 +9,6 @@ wheel_diameter = 4.2
 wheel_circumference = math.pi * wheel_diameter
 wheel_distance = 7.83
 min_turn_speed = 15
-left_motor.set_limits(100, 1440)
-right_motor.set_limits(100, 1440)
-left_motor.reset_encoder()
-right_motor.reset_encoder()
 stop_move = threading.Event()
 
 # PID
@@ -21,7 +17,12 @@ Ki = 0.0
 Kd = 0.0
 dT = 0.05
 
-# Sweeping
+# Initializing motors
+left_motor.set_limits(100, 1250)
+right_motor.set_limits(100, 1250)
+left_motor.reset_encoder()
+right_motor.reset_encoder()
+
 sweeping_motor.set_limits(30, 250)
 sweeping_motor.reset_encoder()
 
@@ -151,13 +152,8 @@ def sweep(angle1, angle2, delay=0.05):
         
         time.sleep(delay)
 
-    sweeping_motor.set_position(0)
-    print("position has been set to 0 in sweep")
-    """this time sleep is absolutely necessary"""
-    
     time.sleep(1) 
-    sweeping_motor.set_power(0)
-    time.sleep(1)    
+    reset_sweeping()
      
         
 def stop():
@@ -169,6 +165,9 @@ def stop():
 
 
 def reset_sweeping():
+    """
+    Resets the sweeping motor
+    """
     sweeping_motor.set_position(0)
     sweeping_motor.set_power(0)
     
@@ -196,6 +195,8 @@ def is_water():
         print("RGB")
         print(rgb)
         return True
+    
+    return False
 
 def thread_move(speed=40, distance=95, direction='forward'):
     """
@@ -233,7 +234,6 @@ def collect():
     move(30, 10, 'forward')
     Grabbing.close_gate()
     move(30, 7, 'backward')
-    print("collecting")
     
 def eject():
     """
@@ -298,7 +298,6 @@ def detect_cubes():
         time.sleep(0.01)
 
 def orient_and_pickup():
-    print("will start to pickup cubes")
     detected_angle = detect_cubes()
     stop_move.clear()
     
