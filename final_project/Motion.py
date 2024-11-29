@@ -153,8 +153,8 @@ def sweep(angle1, angle2, delay=0.05):
         time.sleep(delay)
 
     time.sleep(1) 
-    reset_sweeping()
-     
+    sweeping_motor.set_position(0)
+    time.sleep(1)
         
 def stop():
     """
@@ -338,85 +338,10 @@ def change_row(direction='right'):
     Makes the robot go to the next column and samples the sensors
     """
     if direction == 'right':
-        turn_thread = thread_turn(30, 90, 'right')
+        turn(30, 90, 'right')
+        move(30, 13)
+        turn(30, -90, 'left')
     else:
-        turn_thread = thread_turn(30, -90, 'left')
-        
-    sweep_thread = thread_sweep()
-    
-    while True:
-        rgb = ground_color_sensor.get_rgb()
-        if (20 <= rgb[0] <= 35) and (25 <= rgb[1] <= 45) and (40 <= rgb[2] <= 85):
-            stop_move.set()
-            turn_thread.join()
-            sweep_thread.join()
-            reset_sweeping()
-            print("RGB")
-            print(rgb)
-            return None
-        
-        intensity = block_color_sensor.get_rgb()
-        if sum(intensity) > 70:
-            angle = sweeping_motor.get_encoder()
-            rgb = get_normalized_value()
-            print(rgb)
-            stop_move.set()
-            turn_thread.join()
-            sweep_thread.join()
-            reset_sweeping()
-            time.sleep(0.01)
-  
-            if ((160 <= rgb[0] <= 205) and (30 <= rgb[1] <= 75) and (15 <= rgb[2] <= 40)) or \
-               ((120 <= rgb[0] <= 175) and (70 <= rgb[1] <= 120) and (0 < rgb[2] <= 30)):# Orange or Yello
-                print("valid")
-                return angle
-    
-            else:
-                print("invalid")
-                return None
-        
-    move_thread = thread_move(25, 13)
-    sweep_thread = thread_sweep()
-    
-    while True:
-        rgb = ground_color_sensor.get_rgb()
-        if (20 <= rgb[0] <= 35) and (25 <= rgb[1] <= 45) and (40 <= rgb[2] <= 85):
-            stop_move.set()
-            turn_thread.join()
-            sweep_thread.join()
-            reset_sweeping()
-            print("RGB")
-            print(rgb)
-            break
-        
-        if not move_thread.is_alive():
-            stop_move.set()
-            turn_thread.join()
-            sweep_thread.join()
-            reset_sweeping()
-            break
-        
-        intensity = block_color_sensor.get_rgb()
-        if sum(intensity) > 70:
-            angle = sweeping_motor.get_encoder()
-            rgb = get_normalized_value()
-            print(rgb)
-            stop_move.set()
-            move_thread.join()
-            sweep_thread.join()
-            reset_sweeping()
-            time.sleep(0.01)
-  
-            if ((160 <= rgb[0] <= 205) and (30 <= rgb[1] <= 75) and (15 <= rgb[2] <= 40)) or \
-               ((120 <= rgb[0] <= 175) and (70 <= rgb[1] <= 120) and (0 < rgb[2] <= 30)):# Orange or Yello
-                print("valid")
-                return angle
-    
-            else:
-                print("invalid")
-                return None
- 
-        time.sleep(0.01)
-    
-    
-    
+        turn(30, -90, 'left')
+        move(30, 13)
+        turn(30, 90, 'right')
