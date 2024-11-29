@@ -1,19 +1,19 @@
-from Resources import left_motor, right_motor, gyro_sensor, block_color_sensor, ground_color_sensor, sweeping_motor
+from Resources import *
 import time
 import math
 import threading
 from Grabbing import collect
 
 # Motion
+wheel_diameter = 4.2
+wheel_circumference = math.pi * wheel_diameter
+wheel_distance = 7.83
 min_turn_speed = 15
 left_motor.set_limits(100, 1440)
 right_motor.set_limits(100, 1440)
 left_motor.reset_encoder()
 right_motor.reset_encoder()
 stop_move = threading.Event()
-wheel_diameter = 4.2
-wheel_circumference = math.pi * wheel_diameter
-wheel_distance = 7.83
 
 # PID
 Kp = 0.5
@@ -184,18 +184,27 @@ def get_normalized_value():
     return [round(255 * c / total, 0) for c in rgb]
 
 def thread_move(speed=20, distance=70, direction='forward'):
+    """
+    Create a moving forward thread
+    """
     stop_move.clear()
     move_thread = threading.Thread(target=move, args=(speed, distance, direction))
     move_thread.start()
     return move_thread
 
 def thread_turn(speed=40, angle=90, direction='right'):
+    """
+    Create a turning thread
+    """
     stop_move.clear()
     turn_thread = threading.Thread(target=turn, args=(speed, angle, direction))
     turn_thread.start()
     return turn_thread
 
 def thread_sweep(angle1=45, angle2=-45):
+    """
+    Create a sweeping thread
+    """
     stop_move.clear()
     sweep_thread = threading.Thread(target=sweep, args=(angle1, angle2))
     sweep_thread.start()
@@ -209,7 +218,14 @@ def detect_cubes():
     sweep_thread = thread_sweep()
     
     while True:
- 
+        rgb = ground_color_sensor.get_rgb()
+        if (20 <= rgb[0] <= 35) and (25 <= rgb[1] <= 45) and (40 <= rgb[2] <= 85): # Water detected
+            return None
+
+        distance = ultrasonic_sensor.get_cm()
+        if 0 < distance < 5: # Wall detected
+            return None
+        
         intensity = block_color_sensor.get_rgb()
         if sum(intensity) > 65:
             angle = sweeping_motor.get_encoder()
@@ -221,7 +237,7 @@ def detect_cubes():
             #sweep_thread.join()
                 
             if ((160 <= rgb[0] <= 205) and (30 <= rgb[1] <= 75) and (15 <= rgb[2] <= 35)) or \
-               ((120 <= rgb[0] <= 175) and (70 <= rgb[1] <= 120) and (0 < rgb[2] <= 30)):# Orange or Yellox
+               ((120 <= rgb[0] <= 175) and (70 <= rgb[1] <= 120) and (0 < rgb[2] <= 30)):# Orange or Yellow
                 print("valid")
                 return angle
     
