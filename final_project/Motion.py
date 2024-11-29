@@ -25,6 +25,9 @@ dT = 0.05
 sweeping_motor.set_limits(30, 250)
 sweeping_motor.reset_encoder()
 
+
+
+# PID Controller class
 class PIDController:
     """
     Create a PID Controller for motion
@@ -47,7 +50,11 @@ class PIDController:
         self.last_error = 0
         self.integral = 0
 
+
+
 # Public methods
+
+# Motions methods
 pidController = PIDController()
 
 def move(speed=40, distance=50, direction='forward'):
@@ -84,6 +91,7 @@ def move(speed=40, distance=50, direction='forward'):
 
     stop()
 
+
 def turn(speed=40, angle=90, direction='right'):
     """
     Turns to a given angle, at a given speed and direction
@@ -93,10 +101,7 @@ def turn(speed=40, angle=90, direction='right'):
     initial_angle = gyro_sensor.get_abs_measure()
 
     while not stop_move.is_set():
-        
-        
         current_angle = gyro_sensor.get_abs_measure() - initial_angle
-        #print(current_angle)
         modular_speed = max(min_turn_speed, speed*((angle-current_angle)/angle)) # to slow down at the end of a turn
         
         if direction == 'right':
@@ -116,12 +121,6 @@ def turn(speed=40, angle=90, direction='right'):
         
     stop()
 
-def stop():
-    """
-    Stops any movement
-    """
-    left_motor.set_power(0)
-    right_motor.set_power(0)
 
 def sweep(angle1, angle2, delay=0.05):
     """
@@ -159,7 +158,23 @@ def sweep(angle1, angle2, delay=0.05):
     time.sleep(1) 
     sweeping_motor.set_power(0)
     time.sleep(1)    
+     
         
+def stop():
+    """
+    Stops any movement
+    """
+    left_motor.set_power(0)
+    right_motor.set_power(0)
+
+
+def reset_sweeping():
+    sweeping_motor.set_position(0)
+    sweeping_motor.set_power(0)
+    
+    
+    
+# Detection methods
 def get_normalized_value():
     """
     Detects the normalized color of the ground
@@ -171,6 +186,16 @@ def get_normalized_value():
     
     total = sum(rgb)  
     return [round(255 * c / total, 0) for c in rgb]
+
+def is_water():
+    """
+    Checks if there is water in front
+    """
+    rgb = ground_color_sensor.get_rgb()
+    if (20 <= rgb[0] <= 35) and (25 <= rgb[1] <= 45) and (40 <= rgb[2] <= 85):
+        print("RGB")
+        print(rgb)
+        return True
 
 def thread_move(speed=40, distance=95, direction='forward'):
     """
@@ -209,6 +234,14 @@ def collect():
     Grabbing.close_gate()
     move(30, 7, 'backward')
     print("collecting")
+    
+def eject():
+    """
+    Places the cubes onto the garbage can
+    """
+    Grabbing.open_gate()
+    move(40, 33, 'backward')
+    Grabbing.close_gate()
 
 def detect_cubes():
     """
@@ -225,17 +258,16 @@ def detect_cubes():
     sweep_thread = thread_sweep()
 
     while True:       
-        rgb = ground_color_sensor.get_rgb()
-        if (20 <= rgb[0] <= 35) and (25 <= rgb[1] <= 45) and (40 <= rgb[2] <= 85):
+        
+        if is_water(): # when there is water
             stop_move.set()
             move_thread.join()
             sweep_thread.join()
             reset_sweeping()
             print("RGB")
-            print(rgb)
             return None
         
-        if not move_thread.is_alive():
+        if not move_thread.is_alive(): # if we reached the wall
             stop_move.set()
             move_thread.join()
             sweep_thread.join()
@@ -264,10 +296,6 @@ def detect_cubes():
                 return None
  
         time.sleep(0.01)
-
-def reset_sweeping():
-    sweeping_motor.set_position(0)
-    sweeping_motor.set_power(0)
 
 def orient_and_pickup():
     print("will start to pickup cubes")
