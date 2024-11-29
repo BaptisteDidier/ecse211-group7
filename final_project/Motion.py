@@ -186,6 +186,7 @@ def get_normalized_value():
     total = sum(rgb)  
     return [round(255 * c / total, 0) for c in rgb]
 
+
 def is_water():
     """
     Checks if there is water in front
@@ -198,6 +199,25 @@ def is_water():
     
     return False
 
+
+def is_cube():
+    """
+    Checks if there is a cube in front
+    """
+    return sum(block_color_sensor.get_rgb()) > 70
+
+
+def is_valid(rgb):
+    """
+    Checks if a cube is valid
+    """
+    if ((160 <= rgb[0] <= 205) and (30 <= rgb[1] <= 75) and (15 <= rgb[2] <= 40)) or \
+        ((120 <= rgb[0] <= 175) and (70 <= rgb[1] <= 120) and (0 < rgb[2] <= 30)):
+        return True
+    
+    return None
+
+
 def thread_move(speed=40, distance=95, direction='forward'):
     """
     Create a moving thread
@@ -206,6 +226,7 @@ def thread_move(speed=40, distance=95, direction='forward'):
     move_thread = threading.Thread(target=move, args=(speed, distance, direction), daemon=True)
     move_thread.start()
     return move_thread
+
 
 def thread_turn(speed=40, angle=90, direction='right'):
     """
@@ -216,6 +237,7 @@ def thread_turn(speed=40, angle=90, direction='right'):
     turn_thread.start()
     return turn_thread
 
+
 def thread_sweep(angle1=45, angle2=-45):
     """
     Create a sweeping thread
@@ -224,6 +246,7 @@ def thread_sweep(angle1=45, angle2=-45):
     sweep_thread = threading.Thread(target=sweep, args=(angle1, angle2), daemon=True)
     sweep_thread.start()
     return sweep_thread
+
 
 def collect():
     """
@@ -235,6 +258,7 @@ def collect():
     Grabbing.close_gate()
     move(30, 7, 'backward')
     
+    
 def eject():
     """
     Places the cubes onto the garbage can
@@ -242,6 +266,7 @@ def eject():
     Grabbing.open_gate()
     move(40, 33, 'backward')
     Grabbing.close_gate()
+
 
 def detect_cubes():
     """
@@ -275,8 +300,7 @@ def detect_cubes():
             print("Distance")
             return None
         
-        intensity = block_color_sensor.get_rgb()
-        if sum(intensity) > 70:
+        if is_cube():
             angle = sweeping_motor.get_encoder()
             rgb = get_normalized_value()
             print(rgb)
@@ -286,8 +310,7 @@ def detect_cubes():
             reset_sweeping()
             time.sleep(0.01)
   
-            if ((160 <= rgb[0] <= 205) and (30 <= rgb[1] <= 75) and (15 <= rgb[2] <= 40)) or \
-               ((120 <= rgb[0] <= 175) and (70 <= rgb[1] <= 120) and (0 < rgb[2] <= 30)):# Orange or Yello
+            if is_valid(rgb):
                 print("valid")
                 return angle
     
@@ -335,7 +358,7 @@ def orient_and_pickup():
 
 def change_row(direction='right'):
     """
-    Makes the robot go to the next column and samples the sensors
+    Makes the robot go to the next column
     """
     if direction == 'right':
         turn(30, 90, 'right')
@@ -351,3 +374,32 @@ def clear_line():
     """
     Clears a line for the robot
     """
+    detected_angle = detect_cubes()
+    stop_move.clear()
+    
+    if detected_angle is None:
+        move(40, ultrasonic_sensor.get_cm() - 5)
+        move(80, 102 - ultrasonic_sensor.get_cm(), 'backward')
+        return
+        
+    if detected_angle > 30: # if the cube is on the right
+        turn(25, 10, "right")
+        time.sleep(0.3)
+        print("turn right")
+            
+    elif detected_angle < -30: # if the cube is on the left
+        turn(25, -10, "left")
+        time.sleep(0.3)
+        print("turn left")
+            
+    collect()
+        
+    if detected_angle > 30:
+        turn(25, -10, "left")
+        time.sleep(0.3)
+            
+    elif detected_angle < -30:
+        turn(25, 10, "right")
+        time.sleep(0.3)
+        
+    clear_line()
