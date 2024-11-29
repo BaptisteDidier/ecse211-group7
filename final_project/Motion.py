@@ -216,7 +216,9 @@ def thread_sweep(angle1=45, angle2=-45):
 
 def detect_cubes():
     """
-    Moves the robot and make the sweep until a valid block is seen and return its position relative to the robot
+    Moves the robot and make the sweep until a valid block is seen 
+    and return its position relative to the robot or when it hits
+    an obstacle
     """
     move_thread = thread_move()
     sweep_thread = thread_sweep()
@@ -227,6 +229,7 @@ def detect_cubes():
             stop_move.set()
             move_thread.join()
             sweep_thread.join()
+            reset_sweep()
             return None
 
         distance = ultrasonic_sensor.get_cm()
@@ -234,6 +237,7 @@ def detect_cubes():
             stop_move.set()
             move_thread.join()
             sweep_thread.join()
+            reset_sweep()
             return None
         
         intensity = block_color_sensor.get_rgb()
