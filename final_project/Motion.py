@@ -3,7 +3,11 @@ import time
 import math
 import threading
 import Grabbing
+
 # Motion
+wheel_diameter = 4.2
+wheel_circumference = math.pi * wheel_diameter
+wheel_distance = 7.83
 min_turn_speed = 15
 left_motor.set_limits(100, 1440)
 right_motor.set_limits(100, 1440)
@@ -11,15 +15,7 @@ left_motor.reset_encoder()
 right_motor.reset_encoder()
 stop_move = threading.Event()
 
-# Odometry
-x = 0.0
-y = 0.0
-theta = 0.0
-wheel_diameter = 4.2
-wheel_circumference = math.pi * wheel_diameter
-wheel_distance = 7.83
-
-# PID (adjust if needed)
+# PID
 Kp = 0.5
 Ki = 0.0
 Kd = 0.0
@@ -30,6 +26,9 @@ sweeping_motor.set_limits(30, 250)
 sweeping_motor.reset_encoder()
 
 class PIDController:
+    """
+    Create a PID Controller for motion
+    """
     def __init__(self, kp=Kp, ki=Ki, kd=Kd):
         self.kp = kp
         self.ki = ki
@@ -63,15 +62,12 @@ def move(speed=40, distance=50, direction='forward'):
     initial_angle = gyro_sensor.get_abs_measure()
     pidController.reset()
     
-    #sweeping = run_in_background(sweep)
-    
     while not stop_move.is_set():
         current_left = left_motor.get_encoder() - initial_left
         current_right = right_motor.get_encoder() - initial_right
         
         current_angle = gyro_sensor.get_abs_measure()
         correction = pidController.compute(initial_angle, current_angle)
-        #print(current_left, current_right, current_angle, correction)
 
         if direction == 'forward':
             left_motor.set_power(-speed - correction)
@@ -92,14 +88,12 @@ def turn(speed=40, angle=90, direction='right'):
     """
     Turns to a given angle, at a given speed and direction
     """
-    
     if direction not in ['right', 'left']: 
         raise ValueError("Direction must be 'right' or 'left'")
     initial_angle = gyro_sensor.get_abs_measure()
-    
-    #sweeping = run_in_background(sweep)
 
     while not stop_move.is_set():
+        
         
         current_angle = gyro_sensor.get_abs_measure() - initial_angle
         #print(current_angle)
@@ -129,70 +123,13 @@ def stop():
     left_motor.set_power(0)
     right_motor.set_power(0)
 
-def encoder_to_distance(ticks):
-    """
-    Convert encoder ticks to distance in cm
-    """
-    return (ticks / 360.0) * wheel_circumference
-
-def odometry(sampling_rate=0.1):
-    """
-    Updates the position and angle of the robot
-    """
-    global x, y, theta
-    left_ticks = left_motor.get_encoder()
-    right_ticks = right_motor.get_encoder()
-
-    while True:
-        new_left_ticks = left_motor.get_encoder()
-        new_right_ticks = right_motor.get_encoder()
-
-        delta_left = new_left_ticks - left_ticks
-        delta_right = new_right_ticks - right_ticks
-
-        delta_left_distance = encoder_to_distance(delta_left)
-        delta_right_distance = encoder_to_distance(delta_right)
-
-        delta_distance = (delta_left_distance + delta_right_distance) / 2.0
-        delta_theta = (delta_right_distance - delta_left_distance) / wheel_distance
-
-        x -= delta_distance * math.cos(math.radians(theta))
-        y -= delta_distance * math.sin(math.radians(theta))
-        theta += math.degrees(delta_theta) 
-        theta = theta % 360
-
-        left_ticks, right_ticks = new_left_ticks, new_right_ticks
-        time.sleep(sampling_rate)
-
-def get_position():
-    """
-    Returns the position and angle of the robot
-    """
-    return x, y, theta
-
-def move_to(target_x, target_y, speed=50):
-    """
-    Moves to a certain position with given speed
-    """
-    current_x, current_y, current_theta = get_position()
-    target_theta = math.atan2(target_y - current_y, target_x - current_x)
-    delta_theta = (target_theta - current_theta + math.pi) % (2 * math.pi) - math.pi
-    turn_angle = math.degrees(delta_theta)
-    turn(speed, abs(turn_angle), "right" if turn_angle >= 0 else "left")
-    move(speed, get_euclidean_distance(current_x, current_y, target_x, target_y), "forward")
-
-def get_euclidean_distance(current_x, current_y, target_x, target_y):
-    """
-    Returns the distance between two points
-    """
-    return ((target_x - current_x) ** 2 + (target_y - current_y) ** 2) ** 0.5
-
 def sweep(angle1, angle2, delay=0.05):
     """
     Make the sweeping motion
     """
     print("starts sweeping")
     while not stop_move.is_set():
+        
         sweeping_motor.set_position(angle1 - sweeping_motor.get_encoder())
         while abs(sweeping_motor.get_encoder() - angle1) > 2:
             if stop_move.is_set():
@@ -200,12 +137,10 @@ def sweep(angle1, angle2, delay=0.05):
             time.sleep(0.01)
             
         if stop_move.is_set():
-            print("stop move is set my lord")
             break
         
         time.sleep(delay)
         
-
         sweeping_motor.set_position(angle2 - sweeping_motor.get_encoder())
         while abs(sweeping_motor.get_encoder() - angle2) > 2:
             if stop_move.is_set():
@@ -223,8 +158,7 @@ def sweep(angle1, angle2, delay=0.05):
     
     time.sleep(1) 
     sweeping_motor.set_power(0)
-    time.sleep(1)
-    
+    time.sleep(1)    
         
 def get_normalized_value():
     """
@@ -238,22 +172,28 @@ def get_normalized_value():
     total = sum(rgb)  
     return [round(255 * c / total, 0) for c in rgb]
 
-def explore():
-    print("not implemented")
-
 def thread_move(speed=40, distance=95, direction='forward'):
+    """
+    Create a moving thread
+    """
     stop_move.clear()
     move_thread = threading.Thread(target=move, args=(speed, distance, direction), daemon=True)
     move_thread.start()
     return move_thread
 
 def thread_turn(speed=40, angle=90, direction='right'):
+    """
+    Create a turning thread
+    """
     stop_move.clear()
     turn_thread = threading.Thread(target=turn, args=(speed, angle, direction), daemon=True)
     turn_thread.start()
     return turn_thread
 
 def thread_sweep(angle1=45, angle2=-45):
+    """
+    Create a sweeping thread
+    """
     stop_move.clear()
     sweep_thread = threading.Thread(target=sweep, args=(angle1, angle2), daemon=True)
     sweep_thread.start()
@@ -261,7 +201,9 @@ def thread_sweep(angle1=45, angle2=-45):
 
 def detect_cubes():
     """
-    Moves the robot and make the sweep until a valid block is seen and return its position relative to the robot
+    Moves the robot and make the sweep until a valid block is seen 
+    and return its position relative to the robot or when it hits
+    an obstacle
     """
     wall_distance = ultrasonic_sensor.get_cm()
     while wall_distance == 0:
@@ -324,13 +266,13 @@ def orient_and_pickup():
     if detected_angle is not None:
         print("angle was detected")
         print(detected_angle)
-        
-        
-        if detected_angle > 30:
+
+        if detected_angle > 30: # if the cube is on the right
             turn(25, 10, "right")
             time.sleep(0.3)
             print("turn right")
-        elif detected_angle < -30:
+            
+        elif detected_angle < -30: # if the cube is on the left
             turn(25, -10, "left")
             time.sleep(0.3)
             print("turn left")
@@ -359,6 +301,9 @@ def orient_and_pickup():
     
 
 def change_row(direction='right'):
+    """
+    Makes the robot go to the next column and samples the sensors
+    """
     if direction == 'right':
         turn_thread = thread_turn(30, 90, 'right')
     else:
@@ -375,14 +320,27 @@ def change_row(direction='right'):
             reset_sweeping()
             print("RGB")
             print(rgb)
-            break
+            return Non e
         
-        if not turn_thread.is_alive():
+        intensity = block_color_sensor.get_rgb()
+        if sum(intensity) > 70:
+            angle = sweeping_motor.get_encoder()
+            rgb = get_normalized_value()
+            print(rgb)
             stop_move.set()
-            turn_thread.join()
+            move_thread.join()
             sweep_thread.join()
             reset_sweeping()
-            break
+            time.sleep(0.01)
+  
+            if ((160 <= rgb[0] <= 205) and (30 <= rgb[1] <= 75) and (15 <= rgb[2] <= 40)) or \
+               ((120 <= rgb[0] <= 175) and (70 <= rgb[1] <= 120) and (0 < rgb[2] <= 30)):# Orange or Yello
+                print("valid")
+                return angle
+    
+            else:
+                print("invalid")
+                return None
         
     move_thread = thread_move(25, 13)
     sweep_thread = thread_sweep()

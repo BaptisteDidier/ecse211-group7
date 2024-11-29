@@ -1,14 +1,20 @@
+<<<<<<< Updated upstream
+from Resources import gate_motor
+from Motion import move
+
+=======
 from Resources import gate_motor, block_color_sensor
 from CostMap import *
 
+
 #from Multithread import run_in_background
+>>>>>>> Stashed changes
 
 # Global variables
 motor_power = 100
 motor_dps = 720
 gate_motor.set_limits(motor_power, motor_dps)
 gate_motor.reset_encoder()
-     
      
 # Public methods   
 def open_gate():
@@ -23,10 +29,17 @@ def close_gate():
     """
     gate_motor.set_position_relative(-65)
     
-def get_normalized_rgb(number=5):
+def collect():
     """
-    Returns the normalized values of the fixed color sensor
+    Collect a cube in front of the robot
     """
+<<<<<<< Updated upstream
+    move(40, 3, 'backward')
+    open_gate()
+    move(40, 10, 'forward')
+    close_gate()
+    move(40, 7, 'backward')
+=======
     array = list()
     for _ in range(number):
         rgb = block_color_sensor.get_rgb()
@@ -57,6 +70,7 @@ def is_valid_block():
 
 def collect_block():
     from Motion import move
+    from Motion import move
     """
     Make the grabbing choice assuming that the robot is in the correct position
     """  
@@ -70,6 +84,7 @@ def collect_block():
 
     else:
         move(40, 5, 'backward')
+>>>>>>> Stashed changes
         
 def eject():
     """
@@ -77,6 +92,9 @@ def eject():
     """
     open_gate()
     move(40, 33, 'backward')
+<<<<<<< Updated upstream
+    close_gate()
+=======
     close_gate()
     #collected_cubes = 0
     

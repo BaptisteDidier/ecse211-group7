@@ -1,7 +1,6 @@
 from Resources import *
 import Motion
 from Grabbing import open_gate, close_gate, is_valid_block, collect_block, eject
-from Multithread import run_in_background
 from time import sleep
 
 
