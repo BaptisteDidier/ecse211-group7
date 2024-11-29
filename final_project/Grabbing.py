@@ -1,6 +1,6 @@
 from Resources import gate_motor, block_color_sensor
-from Motion import move
 from CostMap import *
+
 #from Multithread import run_in_background
 
 # Global variables
@@ -15,13 +15,13 @@ def open_gate():
     """
     Open the gate
     """
-    gate_motor.set_position_relative(60)
+    gate_motor.set_position_relative(65)
         
 def close_gate():
     """
     Close the gate
     """
-    gate_motor.set_position_relative(-60)
+    gate_motor.set_position_relative(-65)
     
 def get_normalized_rgb(number=5):
     """
@@ -56,6 +56,7 @@ def is_valid_block():
     return False
 
 def collect_block():
+    from Motion import move
     """
     Make the grabbing choice assuming that the robot is in the correct position
     """  
@@ -81,3 +82,11 @@ def eject():
     
 def get_color():
     return block_color_sensor.get_rgb()
+
+def collect():
+    print("collect")
+    move(40, 3, 'backward')
+    open_gate()
+    move(40, 10, 'forward')
+    close_gate()
+    move(40, 7, 'backward')
