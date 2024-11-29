@@ -199,6 +199,17 @@ def thread_sweep(angle1=45, angle2=-45):
     sweep_thread.start()
     return sweep_thread
 
+def collect():
+    """
+    Collect a cube in front
+    """
+    move(30, 3, 'backward')
+    Grabbing.open_gate()
+    move(30, 10, 'forward')
+    Grabbing.close_gate()
+    move(30, 7, 'backward')
+    print("collecting")
+
 def detect_cubes():
     """
     Moves the robot and make the sweep until a valid block is seen 
@@ -278,14 +289,9 @@ def orient_and_pickup():
             print("turn left")
             
         print("collect")
-        move(30, 3, 'backward')
-        Grabbing.open_gate()
-        move(30, 10, 'forward')
-        Grabbing.close_gate()
-        move(30, 7, 'backward')
-        print("collecting")
+        collect()
         
-        if detected_angle > 30: # we may have to change this
+        if detected_angle > 30:
             turn(25, -10, "left")
             time.sleep(0.3)
             
@@ -320,7 +326,7 @@ def change_row(direction='right'):
             reset_sweeping()
             print("RGB")
             print(rgb)
-            return Non e
+            return None
         
         intensity = block_color_sensor.get_rgb()
         if sum(intensity) > 70:
@@ -328,7 +334,7 @@ def change_row(direction='right'):
             rgb = get_normalized_value()
             print(rgb)
             stop_move.set()
-            move_thread.join()
+            turn_thread.join()
             sweep_thread.join()
             reset_sweeping()
             time.sleep(0.01)
