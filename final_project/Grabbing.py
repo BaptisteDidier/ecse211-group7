@@ -1,6 +1,7 @@
 from Resources import gate_motor
 from Motion import move
 
+
 # Global variables
 motor_power = 100
 motor_dps = 720
@@ -21,6 +22,9 @@ def close_gate():
     gate_motor.set_position_relative(-60)
     
 def collect():
+    """
+    Collect a cube in front of the robot
+    """
     move(40, 3, 'backward')
     open_gate()
     move(40, 10, 'forward')
